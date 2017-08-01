@@ -1,0 +1,12 @@
+Benötigte Oberflächen:
+	- Eingabe Ticket
+	- Übersicht Tickets
+		-> Standard-Benutzer
+			Bedingung: Ersteller == Benutzer & Status == offen
+		-> Bearbeiter
+			Bedingung: Zuständig == Bearbeiter o. Gruppe in der Bearbeiter & Status == offen
+		-> Admin
+			Keine festen Bedingungen, lediglich default auf Status=offen
+	- Suche nach Tickets + Ergebnisse (ggf. separat)
+	- Ticket-Details
+	- (ähnlich zu vorh.)Bearbeitung Ticket inklusive Abschluss Ticket
