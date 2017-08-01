@@ -17,5 +17,10 @@ from django.conf.urls import url
 from django.contrib import admin
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
+    url(r'^tickets/enter/$',),
+    url(r'^tickets/overview/$',),
+    url(r'^tickets/search/$',),
+    url(r'^tickets/(\d{1,4})/edit/$',),
+    url(r'^tickets/(\d{1,4})/$',),
+    url(r'^admin/', admin.site.urls)
 ]
