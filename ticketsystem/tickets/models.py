@@ -2,9 +2,12 @@ from django.db import models
 
 # Create your models here.
 class Ticket(models.Model):   
-    
+    #constants needed for display in the form => template
+    SECTOR_CHOICES = [('Saperion', 'Saperion'), ('Allgemein','Allgemein')]
+    CATEGORY_CHOICES = [('Problem','Problem'), ('Vorschlag','Vorschlag')]
+   
     #
-    # TODO: CREATE VALIDATORS FOR CRITICAL FIELDS
+    # TODO: CREATE VALIDATORS FOR CRITICAL FIELDS ??
     # 
     
     #basic ticket data
@@ -25,3 +28,5 @@ class Ticket(models.Model):
     # TODO: create separate class Person and change to foreign key?
     responsible_person = models.CharField(max_length=40)
     creator = models.CharField(max_length=40)
+    
+    

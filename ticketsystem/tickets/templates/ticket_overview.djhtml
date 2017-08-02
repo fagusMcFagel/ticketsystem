@@ -1,0 +1,29 @@
+<html>
+<head>
+    <title>RG - Offene Tickets</title>
+</head>
+<body>
+    {% if tickets %}
+        <table>
+            <tr>
+                <td>TicketID</td>
+                <td>Erstelldatum</td>
+                <td>Bereich</td>
+                <td>Kategorie</td>
+                <td>Betreff</td>
+            <tr>
+            {% for ticket in tickets %}
+            <tr>
+                <td>{{ ticket.ticketid }}</td>
+                <td>{{ ticket.creationdate }}</td>
+                <td>{{ ticket.sector }}</td>
+                <td>{{ ticket.category }}</td>
+                <td>{{ ticket.subject }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>Keine offenen Tickets</p>
+    {% endif %}
+</body>
+</html>
