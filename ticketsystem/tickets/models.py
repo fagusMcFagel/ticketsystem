@@ -20,7 +20,7 @@ class Ticket(models.Model):
     #advanced/background ticket data
     ticketid = models.AutoField(primary_key=True)
     status = models.CharField(max_length=20)
-    closingdate = models.DateField()
+    closingdate = models.DateField(null=True, blank=True)
     comment = models.CharField(max_length=100)
     solution = models.CharField(max_length=400)
     keywords = models.CharField(max_length=100)

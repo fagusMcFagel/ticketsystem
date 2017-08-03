@@ -1,0 +1,18 @@
+<html>
+<head>
+    <title>RG - Tickets Login</title>
+</head>
+<body>
+    {% if error %}
+        <p style="color:red;">Login fehlgeschlagen!</p>
+    {% endif %}
+    
+    <form action="" method="post" novalidate>
+        <table>
+            {{ form.as_table }}
+        </table>
+        {% csrf_token %}
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
