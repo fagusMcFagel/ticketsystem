@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>RG - Ticket Details</title>
+</head>
+<body>
+    <table>
+        {% for field in editform %}
+        <tr>
+            <td>{{ field.label_tag}}</td>
+            <td><textarea id={{ field.label }} {{readonly}}>{{ field.value }}</textarea></td>
+        </tr>
+        {% endfor %}
+
+        {{detailform.as_table}}
+        <tr>
+            <td><a href="/tickets/overview"><button type="button">Zurück</button></a></td>
+            <td><a href="edit"><button type="button">Bearbeiten</button></a></td>
+        </tr>
+    </table>
+    
+</body>
+</html>

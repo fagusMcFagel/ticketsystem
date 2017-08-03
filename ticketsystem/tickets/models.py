@@ -5,7 +5,7 @@ class Ticket(models.Model):
     #constants needed for display in the form => template
     SECTOR_CHOICES = [('Saperion', 'Saperion'), ('Allgemein','Allgemein')]
     CATEGORY_CHOICES = [('Problem','Problem'), ('Vorschlag','Vorschlag')]
-   
+    STATUS_CHOICES = [('open','open'),('delayed','delayed'),('processing','processing'),('closed','closed')]
     #
     # TODO: CREATE VALIDATORS FOR CRITICAL FIELDS ??
     # 

@@ -1,5 +1,6 @@
 from django import forms
 from tickets.models import Ticket
+from django.conf.locale.de.formats import DATE_INPUT_FORMATS
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
@@ -12,3 +13,22 @@ class EnterTicketForm(forms.Form):
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=20)
     password = forms.CharField(max_length=40, widget=forms.PasswordInput)
+    
+class DetailForm(forms.Form):
+    #basic ticket data
+    sector = forms.CharField(max_length=30, disabled=True)
+    category = forms.CharField(max_length=30, disabled=True)
+    subject = forms.CharField(max_length=50, disabled=True)
+    description = forms.CharField(max_length=400, disabled=True)
+    creationdate = forms.DateField(widget=forms.DateInput, disabled=True)
+    ticketid = forms.CharField(max_length=10, disabled=True)
+
+    # TODO: create separate class Person and change to foreign key?
+    responsible_person = forms.CharField(max_length=40, disabled=True)
+    creator = forms.CharField(max_length=40, disabled=True)
+    
+class EditableDataForm(forms.Form):
+    status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES)
+    comment = forms.CharField(widget=forms.Textarea, max_length=100)
+    solution = forms.CharField(widget=forms.Textarea,max_length=400)
+    keywords = forms.CharField(widget=forms.Textarea,max_length=100)
