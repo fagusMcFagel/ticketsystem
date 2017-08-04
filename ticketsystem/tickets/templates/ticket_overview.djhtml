@@ -1,5 +1,7 @@
 <html>
 <head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
     <title>RG - Offene Tickets</title>
 </head>
 <body>
@@ -7,7 +9,8 @@
         <table>
             <tr>
                 <td>TicketID</td>
-                <td>Erstelldatum</td>
+                <td>Erstellt am</td>
+                <td>Uhrzeit</td>
                 <td>Bereich</td>
                 <td>Kategorie</td>
                 <td>Betreff</td>
@@ -15,7 +18,8 @@
             {% for ticket in tickets %}
             <tr>
                 <td><a href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
-                <td>{{ ticket.creationdate }}</td>
+                <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
+                <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
                 <td>{{ ticket.sector }}</td>
                 <td>{{ ticket.category }}</td>
                 <td>{{ ticket.subject }}</td>

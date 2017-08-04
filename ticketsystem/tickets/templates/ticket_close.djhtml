@@ -1,0 +1,34 @@
+<html>
+<head>
+    {% load static %}
+    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
+    <title>RG - Ticket schließen</title>
+</head>
+<body>
+    <form action="" method="post" novalidate>
+    <table>
+        <tr>
+            <td>
+                 <table>
+                    {% for field in editform %}
+                    <tr>
+                        <td>{{ field.label_tag}}</td>
+                        <td><textarea id={{ field.label }} {{readonly}}>{{ field.value }}</textarea></td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+            <td>        
+                <table>
+                {{detailform.as_table}}
+                </table>
+            </td>
+        </tr>
+    </table>
+    <a href={% url 'list_ticket' %}><button type="button">Übersicht</button></a>
+    <a href={% url 'edit_ticket' detailform.ticketid.value %}><button type="button">Zu Bearbeitung</button></a>
+    {% csrf_token %}
+    <input type="submit" value="Ticket schließen">
+    </form>
+</body>
+</html>
