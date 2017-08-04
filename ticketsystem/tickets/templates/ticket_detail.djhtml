@@ -13,8 +13,9 @@
 
         {{detailform.as_table}}
         <tr>
-            <td><a href="/tickets/overview"><button type="button">Zurück</button></a></td>
+            <td><a href={% url 'list_ticket' %}><button type="button">Zurück</button></a></td>
             <td><a href="edit"><button type="button">Bearbeiten</button></a></td>
+            <td><a href="close"><button type="button">Abschließen</button></a></td>
         </tr>
     </table>
     

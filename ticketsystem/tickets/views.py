@@ -8,6 +8,9 @@ import datetime
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.forms.models import model_to_dict
+from django.utils import timezone
+from datetime import tzinfo
+
 
 #needed later
 #from django.core.mail import send_mail, get_connection
@@ -44,14 +47,15 @@ def enter_ticket(request):
         if form.is_valid():
             #get cleaned data and current system time
             cd = form.cleaned_data
-            now = datetime.datetime.now()
+            #tz = tzinfo()
+            now = timezone.now()
 
             #init ticket object;
             #ticketid increments automatically
             #all fields can't be NULL, so explicitly initalised with ''
             t = Ticket(sector='Saperion', category='Problem',
                        subject=cd['subject'], description=cd['description'],
-                       creationdate = now, status='open',
+                       creationdatetime = now, status='open',
                        creator='ppssystem',#request.META['USERNAME'],
                        responsible_person='forner', 
                        comment='', solution='',keywords=''
