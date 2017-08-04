@@ -1,7 +1,6 @@
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
 from tickets.models import Ticket
-from tickets.forms import EnterTicketForm, LoginForm, DetailForm,\
-    EditableDataForm
+from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm
 from django.shortcuts import render
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
