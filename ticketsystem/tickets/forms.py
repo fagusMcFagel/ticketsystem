@@ -1,6 +1,5 @@
 from django import forms
 from tickets.models import Ticket
-from django.conf.locale.de.formats import DATE_INPUT_FORMATS
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
@@ -14,6 +13,7 @@ class LoginForm(forms.Form):
     username = forms.CharField(max_length=20)
     password = forms.CharField(max_length=40, widget=forms.PasswordInput)
     
+#form for display of unchangeable ticket data (except by admins)
 class DetailForm(forms.Form):
     #basic ticket data
     sector = forms.CharField(max_length=30, disabled=True)
@@ -26,7 +26,8 @@ class DetailForm(forms.Form):
     # TODO: create separate class Person and change to foreign key?
     responsible_person = forms.CharField(max_length=40, disabled=True)
     creator = forms.CharField(max_length=40, disabled=True)
-    
+
+#form for display of ticket data changeable by the ticket processors
 class EditableDataForm(forms.Form):
     status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES)
     comment = forms.CharField(widget=forms.Textarea, max_length=100)

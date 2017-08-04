@@ -15,12 +15,12 @@ class Ticket(models.Model):
     category = models.CharField(max_length=30)
     subject = models.CharField(max_length=50)
     description = models.CharField(max_length=400)
-    creationdate = models.DateField()
+    creationdatetime = models.DateTimeField()
     
     #advanced/background ticket data
     ticketid = models.AutoField(primary_key=True)
     status = models.CharField(max_length=20)
-    closingdate = models.DateField(null=True, blank=True)
+    closingdatetime = models.DateTimeField(null=True, blank=True)
     comment = models.CharField(max_length=100)
     solution = models.CharField(max_length=400)
     keywords = models.CharField(max_length=100)
