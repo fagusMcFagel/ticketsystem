@@ -26,7 +26,7 @@ class Ticket(models.Model):
     keywords = models.CharField(max_length=100)
     
     # TODO: create separate class Person and change to foreign key?
-    responsible_person = models.CharField(max_length=40)
+    responsible_person = models.CharField(max_length=40, blank=True)
     creator = models.CharField(max_length=40)
     
     

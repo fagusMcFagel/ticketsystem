@@ -1,5 +1,6 @@
 from django import forms
 from tickets.models import Ticket
+from django.forms.widgets import Textarea
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
@@ -33,3 +34,21 @@ class EditableDataForm(forms.Form):
     comment = forms.CharField(widget=forms.Textarea, max_length=100)
     solution = forms.CharField(widget=forms.Textarea,max_length=400)
     keywords = forms.CharField(widget=forms.Textarea,max_length=100)
+
+#form for ticket data especially relevant & partly required when closing ticket
+class ClosingDataForm(forms.Form):
+    status = forms.ChoiceField(choices=[('closed','closed')],initial='closed', disabled=True)
+    comment = forms.CharField(widget=forms.Textarea, max_length=100, required=False)
+    solution = forms.CharField(widget=forms.Textarea,max_length=400, required=True)
+    keywords = forms.CharField(widget=forms.Textarea,max_length=100, required=True)
+
+#form for entering query data
+class SearchForm(forms.Form):
+    sector = forms.ChoiceField(choices = Ticket.SECTOR_CHOICES+[('','')], required=False)
+    category = forms.ChoiceField(choices = Ticket.CATEGORY_CHOICES+[('','')], required=False)
+    status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES+[('','')], required=False)
+    subject = forms.CharField(max_length=40, required=False)
+    description = forms.CharField(max_length=40, required=False)  
+    comment = forms.CharField(max_length=40, required=False)
+    solution = forms.CharField(max_length=40, required=False)
+    keywords = forms.CharField(max_length=40, required=False)
