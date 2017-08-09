@@ -1,8 +1,7 @@
-<html>
-<head>
-    <title>RG - Ticket erstellen</title>
-</head>
-<body>
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticket erstellen {% endblock %}
+
+{% block pagecontent %}
     <h1>Ticket erstellen</h1>
     {% if form.errors %}
         <p style="color: red;">
@@ -13,7 +12,7 @@
             <p><strong>Ihr Ticket wurde erfolgreich erstellt!</strong></p>
         {% endif %}
     {% endif %}
-    
+
     <form action="" method="post" novalidate>
         <table>
             {{ form.as_table }}
@@ -21,5 +20,4 @@
         {% csrf_token %}
         <input type="submit" value="Submit">
     </form>
-</body>
-</html>
+{% endblock %}

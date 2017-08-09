@@ -1,15 +1,11 @@
-<html>
-<head>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
-    <title>RG - Ticket suchen</title>
-</head>
-<body>
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticket suchen{% endblock %}
+
+{% block pagecontent %}
     <form action="" method="get" novalidate>
     <table>
         {{ searchform.as_table }}
     </table>
     <input type="submit" value="Suchen">
     <form>
-</body>
-</html>
+{% endblock %}

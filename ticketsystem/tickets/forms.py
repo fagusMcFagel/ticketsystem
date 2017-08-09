@@ -1,6 +1,5 @@
 from django import forms
 from tickets.models import Ticket
-from django.forms.widgets import Textarea
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
@@ -20,7 +19,7 @@ class DetailForm(forms.Form):
     sector = forms.CharField(max_length=30, disabled=True)
     category = forms.CharField(max_length=30, disabled=True)
     subject = forms.CharField(max_length=50, disabled=True)
-    description = forms.CharField(max_length=400, disabled=True)
+    description = forms.CharField(widget=forms.Textarea, max_length=400, disabled=True)
     creationdate = forms.DateField(widget=forms.DateInput, disabled=True)
     ticketid = forms.CharField(max_length=10, disabled=True)
 

@@ -1,15 +1,22 @@
-<html>
-<head>
-    <title>RG - Ticket Details</title>
-</head>
-<body>
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticket bearbeiten {% endblock %}
+
+{% block pagecontent %}
     <table>
-    {% for key,value in ticket.items %}
+        {% for field in editform %}
         <tr>
-            <td>{{ key }}</td>
-            <td>{{ value }}</td>
+            <td class="heading">{{ field.label_tag}}</td>
+            <td class="tablecont"><textarea id={{ field.label }} {{readonly}}>{{ field.value }}</textarea></td>
         </tr>
-    {% endfor %}
+        {% endfor %}
+        
+        {% for field in detailform %}
+            <tr>
+                <td class="heading">{{field.label_tag}}</td>
+                <td class="tablecont">{{ field }}</td>
+            </tr>        
+        {% endfor %}
+            <a href={% url 'list_ticket' %}><button type="button">Zurück</button></a></td>
+            <a href="close"><button type="button">Abschließen</button></a></td>
     </table>
-</body>
-</html>
+{% endblock%}

@@ -15,7 +15,7 @@ from _functools import reduce
 
 #function for 'tickets/login'
 def login_user(request):
-    #init variables error and login_user
+    #initialize variables error and login_user
     error = False
     logged_in_user = None
     
@@ -26,7 +26,7 @@ def login_user(request):
         if form.is_valid():
             if request.user.is_authenticated():
                 logout(request)
-            #get username and password from POST data and try to authenticate user
+            #get user name and password from POST data and try to authenticate user
             username = request.POST['username']
             password = request.POST['password']
             user = authenticate(request, username=username, password=password)
@@ -42,7 +42,7 @@ def login_user(request):
 
     #if called normally
     else:
-        #display currently logged in user, if existant
+        #display currently logged in user, if existent
         if request.user.is_authenticated():
             logged_in_user = request.user
         #set empty login form
@@ -54,7 +54,7 @@ def login_user(request):
 
 #function for 'tickets/enter'
 def enter_ticket(request):
-    #init thx with false -> don't display thank you message
+    #initialize thx with false -> don't display thank you message
     thx = False
     if request.method=="POST":
         #set form as EnterTicketForm-Object with the POST-data
@@ -66,9 +66,9 @@ def enter_ticket(request):
             cd = form.cleaned_data
             now = timezone.now()
 
-            #init ticket object t with form data
-            #ticketid increments automatically
-            #fields mustn't be NULL -> initalised with '' (empty String)
+            #initialize ticket object t with form data
+            #ticket id increments automatically
+            #fields mustn't be NULL -> initalized with '' (empty String)
             t = Ticket(sector=cd['sector'], category=cd['category'],
                        subject=cd['subject'], description=cd['description'],
                        creationdatetime = now, status='open',
@@ -84,11 +84,11 @@ def enter_ticket(request):
             thx = True
             form=EnterTicketForm()    
     else:
-        #init empty form
+        #initialize empty form
         form = EnterTicketForm()
     
     #form: form to be displayed for ticket entering; thx: display thanks-message 
-    return render(request, 'ticket_enter.djhtml', {'form':form, 'thx':thx})
+    return render(request, 'ticket_enter.djhtml', {'form':form, 'thx':thx, 'elements':{'enter':'id="selected"','overview':""}})
 
 #function for 'tickets/overview'
 @login_required(login_url='/tickets/login/')
@@ -114,27 +114,35 @@ def show_ticket_list(request):
 def show_ticket_detail(request, ticketid):
     if request.method=="GET":
         #query for ticket with given id
-        ticket = Ticket.objects.get(ticketid=str(ticketid))
-        
+        try:
+            ticket = Ticket.objects.get(ticketid=str(ticketid))
+        #catch possible exceptions
+        except Exception as e:
+            if isinstance(e, Ticket.DoesNotExist):
+                return HttpResponse("No Ticket")
+            elif isinstance(e, Ticket.MultipleObjectsReturned):
+                return HttpResponse("Too many Tickets")
+            else:
+                return HttpResponse("Unknown error")
         # FIXME: no ticket found -> id is illegal (when entered in browser bar)
-        
-        #convert ticket to dictionary with it's data
-        ticket_dict = model_to_dict(ticket)
-        
-        #if user is ticket creator or has permissions to change tickets 
-        if (request.META['USERNAME']==ticket_dict['creator'] 
-            or request.user.has_perm('tickets.change_bar')
-            ):
-            detailform = DetailForm(initial=ticket_dict)
-            editform = EditableDataForm(initial=ticket_dict)
-    
-            return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
-                                                            'editform':editform,
-                                                            'readonly':"disabled"})
-        #if user is denied to view ticket data, return Http 403 Forbidden
         else:
-            return HttpResponseForbidden()
-    #if the request method is anything other than GET, return Http 403 Forbidden
+            #convert ticket to dictionary with it's data
+            ticket_dict = model_to_dict(ticket)
+            
+            #if user is ticket creator or has permissions to change tickets 
+            if (request.META['USERNAME']==ticket_dict['creator'] 
+                or request.user.has_perm('tickets.change_ticket')
+                ):
+                detailform = DetailForm(initial=ticket_dict)
+                editform = EditableDataForm(initial=ticket_dict)
+        
+                return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
+                                                                'editform':editform,
+                                                                'readonly':"disabled"})
+            #if user is denied to view ticket data, return HTTP 403 Forbidden
+            else:
+                return HttpResponseForbidden()
+    #if the request method is anything other than GET, return HTTP 403 Forbidden
     else:
         return HttpResponseForbidden()
 
@@ -142,24 +150,33 @@ def show_ticket_detail(request, ticketid):
 @login_required(login_url='/tickets/login/')
 def edit_ticket_detail(request, ticketid):
     #if user is ticket creator or has permissions to change tickets 
-    if request.user.has_perm('tickets.change_bar'):
+    if request.user.has_perm('tickets.change_ticket'):
         if request.method=="GET":
             #query for ticket with given id
-            ticket = Ticket.objects.get(ticketid=str(ticketid))
-                    
-            # FIXME: no ticket found -> id is illegal (when entered in browser bar)
-            
-            #convert ticket to dictionary with it's data
-            ticket_dict = model_to_dict(ticket)
-            
-    
-            detailform = DetailForm(initial=ticket_dict)
-            editform = EditableDataForm(initial=ticket_dict)
-            return render(request, 'ticket_detail.djhtml', 
-                          {'detailform':detailform,'editform':editform,'readonly':""})
+            try:
+                ticket = Ticket.objects.get(ticketid=str(ticketid))
+            #catch possible exceptions
+            except Exception as e:
+                if isinstance(e, Ticket.DoesNotExist):
+                    return HttpResponse("No Ticket")
+                elif isinstance(e, Ticket.MultipleObjectsReturned):
+                    return HttpResponse("Too many Tickets")
+                else:
+                    return HttpResponse("Unknown error")
+            else:
+                # FIXME: no ticket found -> id is illegal (when entered in browser bar)
+                
+                #convert ticket to dictionary with it's data
+                ticket_dict = model_to_dict(ticket)
+                
+        
+                detailform = DetailForm(initial=ticket_dict)
+                editform = EditableDataForm(initial=ticket_dict)
+                return render(request, 'ticket_detail.djhtml', 
+                              {'detailform':detailform,'editform':editform,'readonly':""})
         elif request.method=="POST":
-            # FIXME: if entered data is valid, update ticket data in db,
-            # and display success msg
+            # FIXME: if entered data is valid, update ticket data in database,
+            # and display success message
             return HttpResponse("EDIT, GET IT?")
     else:
         # FIXME: display permission failure
@@ -167,43 +184,57 @@ def edit_ticket_detail(request, ticketid):
 
 @login_required(login_url='/tickets/login/')
 def close_ticket(request, ticketid):
-    #Get-Request -> Clicked Button 'Close'/'Abschließen' in ticket details
+    #Get-Request -> Clicked Button 'Close' in ticket details
     if request.user.has_perm('tickets.change_ticket'):
         if request.method=="GET":
             #query for ticket with given id
-            ticket = Ticket.objects.get(ticketid=str(ticketid))
-            ticket.status='closed'
-            
-            # FIXME: no ticket found -> id is illegal (when entered in browser bar)
-            
-            #convert ticket to dictionary with it's data
-            ticket_dict = model_to_dict(ticket)
-            
-            #if user has permissions to change tickets 
-            if request.user.has_perm('tickets.change_bar'):
-                detailform = DetailForm(initial=ticket_dict)
-                closeform = ClosingDataForm(initial=ticket_dict)
-                return render(request, 'ticket_close.djhtml', {'detailform':detailform,
-                                                                'closeform':closeform
-                                                                })
+            try:
+                ticket = Ticket.objects.get(ticketid=str(ticketid))
+            #catch possible exceptions
+            except Exception as e:
+                if isinstance(e, Ticket.DoesNotExist):
+                    return HttpResponse("No Ticket")
+                elif isinstance(e, Ticket.MultipleObjectsReturned):
+                    return HttpResponse("Too many Tickets")
+                else:
+                    return HttpResponse("Unknown error")
+            else:
+                ticket.status='closed'
+                
+                # FIXME: no ticket found -> id is illegal (when entered in browser bar)
+                
+                #convert ticket to dictionary with it's data
+                ticket_dict = model_to_dict(ticket)
+                
+                #if user has permissions to change tickets 
+                if request.user.has_perm('tickets.change_ticket'):
+                    detailform = DetailForm(initial=ticket_dict)
+                    closeform = ClosingDataForm(initial=ticket_dict)
+                    return render(request, 'ticket_close.djhtml', {'detailform':detailform,
+                                                                    'closeform':closeform
+                                                                    })
         #Post-Request -> Clicked Button 'Close'/'Abschließen' in closing template
         elif request.method=="POST":
-            #if the data is valid, update ticket in db with entered data
-            if closeform.is_valid():
-                Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
-                                                                solution = closeform.cleaned_data['solution'],
-                                                                  keywords = closeform.cleaned_data['keywords'],
-                                                                  closingdatetime = timezone.now(),
-                                                                  status = "closed")
-                return HttpResponseRedirect('/tickets/overview/')
-            #if data is invalid, display the same template with error messages
+            if "cancel" in request.POST:
+                return HttpResponseRedirect("/tickets/overview")
             else:
-                ticket = Ticket.objects.get(ticketid=str(ticketid))
-                ticket_dict = model_to_dict(ticket)
-                detailform = DetailForm(initial=ticket_dict)
-                return render(request, 'ticket_close.djhtml',
-                              {'detailform':detailform, 'closeform':closeform})
-        #block other request forms with a Http 403 (Forbidden) Response
+                closeform=ClosingDataForm(request.POST)
+                #if the data is valid, update ticket in database with entered data
+                if closeform.is_valid():
+                    Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
+                                                                    solution = closeform.cleaned_data['solution'],
+                                                                      keywords = closeform.cleaned_data['keywords'],
+                                                                      closingdatetime = timezone.now(),
+                                                                      status = "closed")
+                    return HttpResponseRedirect('/tickets/overview/')
+                #if data is invalid, display the same template with error messages
+                else:
+                    ticket = Ticket.objects.get(ticketid=str(ticketid))
+                    ticket_dict = model_to_dict(ticket)
+                    detailform = DetailForm(initial=ticket_dict)
+                    return render(request, 'ticket_close.djhtml',
+                                  {'detailform':detailform, 'closeform':closeform})
+        #block other request forms with a HTTP 403 (Forbidden) Response
         else:
             return HttpResponseForbidden()
     else:
@@ -214,7 +245,7 @@ def close_ticket(request, ticketid):
 @login_required(login_url='/tickets/login/')
 def search_tickets(request):
     if request.method=="GET":
-        #init searchform with GET data
+        #initialize searchform with GET data
         searchform = SearchForm(request.GET)
         
         #if entered data is valid, build a query and query the db for tickets
@@ -244,9 +275,7 @@ def search_tickets(request):
             # as a Q object
             # one liner form of version with one Q object
             query = reduce(lambda q,key: q&Q(**{key: query_dict[key]}), query_dict, Q())             
-            print(query)
             tickets = Ticket.objects.filter(query)
-            print(tickets.count())
             return render(request, 'ticket_search.djhtml', {'searchform':searchform})
         else:
             return HttpResponse("Form not valid")

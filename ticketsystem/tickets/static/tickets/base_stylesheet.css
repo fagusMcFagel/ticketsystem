@@ -1,0 +1,90 @@
+body{
+    font-family: "Calibri";
+    font-size: 16pt;
+}
+
+table.list {
+    margin:0px 5px 5px 5px;
+}
+
+.btn {
+    color:white;
+    font-family: "Calibri";
+    font-size: 12pt;
+    font-weight:bold;
+    background-color: rgb(0,68,107);
+}
+
+.btn:hover {
+    background-color: rgb(70,140,180);
+}
+
+.buttoncell{
+    text-align:center;
+    padding-top:10px;
+    width:200px;
+    height:20px;
+}
+
+.heading{
+    font-size: 14pt;
+    font-weight:bold;
+    text-align:center;
+}
+
+.tablecont {
+    font-size: 12pt;
+}
+
+table.list td {
+
+}
+
+ul.nvgtbar{
+    position:fixed;
+    top:0;
+    width:100%;
+    list-style-type:none;
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    height: 40px;
+    font-family: "Calibri";
+    background-color: rgb(0,68,107);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+li.nvgtbtn {
+    float:left;
+    background-color: rgb(0,68,107);
+    border-right: 1px solid #ffffff;
+    border-left: 0px;
+    height: 50px;
+}
+
+a.nvgtlink {
+    margin: 0;
+    padding:8px;
+    text-align: center;
+    display: block;
+    color: white;
+    text-decoration:none;
+}
+
+img.rglogo {
+    position: fixed;
+    top:0;
+    right:0;
+    margin:0;
+    padding:0;
+    height: 120px;
+    background-color: rgb(0,68,107);
+    display: block;
+    float: right;
+}
+
+li a:hover {
+    background-color:rgb(0,90,130);
+}
+

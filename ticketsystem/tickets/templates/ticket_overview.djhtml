@@ -1,20 +1,17 @@
-<html>
-<head>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
-    <title>RG - Offene Tickets</title>
-</head>
-<body>
+{% extends "base.djhtml" %}
+{% block title %} RG - Offene Tickets {% endblock %}
+
+{% block pagecontent %}
     {% if tickets %}
-        <table>
-            <tr>
+        <table class="list" border="1" cellspacing="0" cellpadding="4px">
+            <tr class="heading">
                 <td>TicketID</td>
                 <td>Erstellt am</td>
                 <td>Uhrzeit</td>
                 <td>Bereich</td>
                 <td>Kategorie</td>
                 <td>Betreff</td>
-            <tr>
+            </tr>
             {% for ticket in tickets %}
             <tr>
                 <td><a href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
@@ -29,5 +26,4 @@
     {% else %}
         <p>Keine offenen Tickets</p>
     {% endif %}
-</body>
-</html>
+{% endblock %}

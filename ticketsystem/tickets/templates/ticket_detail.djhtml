@@ -1,23 +1,44 @@
-<html>
-<head>
-    <title>RG - Ticket Details</title>
-</head>
-<body>
-    <table>
-        {% for field in editform %}
-        <tr>
-            <td>{{ field.label_tag}}</td>
-            <td><textarea id={{ field.label }} {{readonly}}>{{ field.value }}</textarea></td>
-        </tr>
-        {% endfor %}
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticketdaten{% endblock %}
 
-        {{detailform.as_table}}
+{% block pagecontent %}
+    <table>
         <tr>
-            <td><a href={% url 'list_ticket' %}><button type="button">Zurück</button></a></td>
-            <td><a href="edit"><button type="button">Bearbeiten</button></a></td>
-            <td><a href="close"><button type="button">Abschließen</button></a></td>
+            <td>
+                <table>
+                    {% for field in editform %}
+                    <tr>
+                        <td class="heading">{{ field.label_tag}}</td>
+                        <td class="tablecont">{{ field }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+            <td>
+                <table>
+                    {% for field in detailform %}
+                    <tr>
+                        <td class="heading">{{field.label_tag}}</td>
+                        <td class="tablecont">{{ field }}</td>
+                    </tr>        
+                    {% endfor %}
+                </table>
+            </td>
+        <tr>
+            <td colspan=2>
+                <table>
+                    <tr>
+                        <td class="buttoncell"><a href={% url 'list_ticket' %}><button class="btn" type="button">Zurück</button></a></td>       
+                        <td class="buttoncell">
+                            {% if readonly %}
+                            <a href="edit"><button class="btn" type="button">Bearbeiten</button></a>
+                            {% else %}
+                            {% endif %}
+                        </td>
+                        <td class="buttoncell"><a href="close"><button class="btn" type="button">Abschließen</button></a></td>
+                    </tr>
+                </table>
+            </td>
         </tr>
     </table>
-    
-</body>
-</html>
+{% endblock %}

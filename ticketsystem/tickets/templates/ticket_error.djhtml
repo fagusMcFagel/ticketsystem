@@ -1,0 +1,6 @@
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticketdaten{% endblock %}
+
+{% block pagecontent %}
+    <p class="errormsg">{{ errormsg }}</p>
+{% endblock %}

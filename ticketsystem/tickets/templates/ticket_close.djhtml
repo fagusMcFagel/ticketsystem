@@ -1,29 +1,40 @@
-<html>
-<head>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
-    <title>RG - Ticket schließen</title>
-</head>
-<body>
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticket schließen {% endblock %}
+
+{% block pagecontent %}
+    
     <form action="" method="post" novalidate>
     <table>
         <tr>
             <td>
-                 <table>
-                {{ closeform.as_table }}
+                <table>
+                    {% for field in closeform %}
+                    <tr>
+                        <td class="heading">{{ field.label_tag}}</td>
+                        <td class="tablecont">{{ field }}</td>
+                    </tr>
+                    {% endfor %}
                 </table>
             </td>
-            <td>        
+            <td>
                 <table>
-                {{ detailform.as_table }}
+                    {% for field in detailform %}
+                    <tr>
+                        <td class="heading">{{field.label_tag}}</td>
+                        <td class="tablecont">{{ field }}</td>
+                    </tr>        
+                    {% endfor %}
                 </table>
             </td>
         </tr>
+        <tr>
+            <td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></td>  
+            <td class="buttoncell"></td>
+            <td class="buttoncell">
+                {% csrf_token %}
+                <input class="btn" type="submit" name="close" value="Ticket schließen">
+            </td>
+        </tr>
     </table>
-    {% csrf_token %}
-    <input type="submit" value="Ticket schließen">
     </form>
-    <a href={% url 'list_ticket' %}><button type="button">Übersicht</button></a>
-    <a href={% url 'edit_ticket' detailform.ticketid.value %}><button type="button">Zu Bearbeitung</button></a>
-</body>
-</html>
+{% endblock %}
