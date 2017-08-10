@@ -1,29 +1,71 @@
 {% extends "base.djhtml" %}
 {% block title %} RG - Offene Tickets {% endblock %}
 
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
 {% block pagecontent %}
-    {% if tickets %}
-        <table class="list" border="1" cellspacing="0" cellpadding="4px">
-            <tr class="heading">
-                <td>TicketID</td>
-                <td>Erstellt am</td>
-                <td>Uhrzeit</td>
-                <td>Bereich</td>
-                <td>Kategorie</td>
-                <td>Betreff</td>
-            </tr>
-            {% for ticket in tickets %}
-            <tr>
-                <td><a href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
-                <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
-                <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
-                <td>{{ ticket.sector }}</td>
-                <td>{{ ticket.category }}</td>
-                <td>{{ ticket.subject }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-    {% else %}
-        <p>Keine offenen Tickets</p>
-    {% endif %}
+    <table>
+        <tr>
+            <td class="tableheading">GRUPPENTICKETS</td>
+            <td class="tableheading">ÜBERNOMMENE TICKETS</td>
+        </tr>
+        <tr>
+            <td class="overviewlist">
+                <table class="list" border="1" cellspacing="0" cellpadding="4px">
+                    <tr class="heading">
+                        <td>TicketID</td>
+                        <td>Erstellt am</td>
+                        <td>Uhrzeit</td>
+                        <td>Bereich</td>
+                        <td>Kategorie</td>
+                        <td>Betreff</td>
+                    </tr>
+                    {% if tickets_group %}
+                    {% for ticket in tickets_group %}
+                    <tr>
+                        <td><a href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
+                        <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
+                        <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
+                        <td>{{ ticket.sector }}</td>
+                        <td>{{ ticket.category }}</td>
+                        <td>{{ ticket.subject }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+            <td class="overviewlist">
+                <table class="list" border="1" cellspacing="0" cellpadding="4px">
+                    <tr class="heading">
+                        <td>TicketID</td>
+                        <td>Erstellt am</td>
+                        <td>Uhrzeit</td>
+                        <td>Bereich</td>
+                        <td>Kategorie</td>
+                        <td>Betreff</td>
+                    </tr>
+                    {% if tickets_user %}
+                    {% for ticket in tickets_user %}
+                    <tr class="tablecont">
+                        <td><a href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
+                        <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
+                        <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
+                        <td>{{ ticket.sector }}</td>
+                        <td>{{ ticket.category }}</td>
+                        <td>{{ ticket.subject }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% else %}
+                    <tr>
+                        <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </td>
+        </tr>
+    </table>
 {% endblock %}

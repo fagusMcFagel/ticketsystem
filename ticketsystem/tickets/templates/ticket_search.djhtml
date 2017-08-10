@@ -4,10 +4,14 @@
 {% block pagecontent %}
     <form action="" method="get" novalidate>
     <table>
-        {{ searchform.as_table }}
+        {% for field in searchform %}
         <tr>
-            <td class="buttoncell"><input class="btn" type="submit" value="Suchen"></td>
-            <td class="buttoncell"></td>
+            <td class="heading">{{ field.label }}</td>
+            <td>{{ field }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Suchen"></td>
         </tr>
     </table> 
     </form>
@@ -22,13 +26,15 @@
     {% for ticket in results %}
         <tr>
             {% for key, value in ticket.items %}
-                <td class="tablecont">
                 {% if key == "ticketid" %}
+                <td class="tablecont" align="center">
                 <a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ value }}</a>
-                {% else %}
-                {{ value }}             
-                {% endif %}   
                 </td>
+                {% else %}
+                <td class="tablecont">
+                {{ value }}
+                </td>
+                {% endif %}   
             {% endfor %}
         </tr>
     {% endfor %}

@@ -2,12 +2,12 @@ from django.db import models
 
 # Create your models here.
 class Ticket(models.Model):   
-    #constants needed for display in the form => template
+    #constants for choices in form(and template) fields and
     SECTOR_CHOICES = [('Saperion', 'Saperion'), ('Allgemein','Allgemein')]
     CATEGORY_CHOICES = [('Problem','Problem'), ('Vorschlag','Vorschlag')]
-    STATUS_CHOICES = [('open','open'),('delayed','delayed'),('processing','processing'),('closed','closed')]
+    STATUS_CHOICES = [('open','Offen'),('delayed','Verzögert'),('processing','In Bearbeitung')]
     
-    #ticket model fields
+    
     ticketid = models.AutoField(primary_key=True, verbose_name="TicketID")
     status = models.CharField(max_length=20, verbose_name="Status")
     
@@ -23,6 +23,7 @@ class Ticket(models.Model):
     solution = models.CharField(max_length=400, verbose_name="Lösung")
     keywords = models.CharField(max_length=100, verbose_name="Keywords")
     closingdatetime = models.DateTimeField(null=True, blank=True, verbose_name="Abschlussdatum")
+    workinghours = models.FloatField(default=0.0, verbose_name="Bearbeitungszeit")
     
 
     

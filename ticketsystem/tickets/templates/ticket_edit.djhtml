@@ -1,7 +1,10 @@
 {% extends "base.djhtml" %}
 {% block title %}RG - Ticketdaten{% endblock %}
 
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
 {% block pagecontent %}
+    <form action="" method="POST" novalidate>
     <table>
         <tr>
             <td>
@@ -9,7 +12,7 @@
                     {% for field in editform %}
                     <tr>
                         <td class="heading">{{ field.label_tag}}</td>
-                        <td class="tablecont" disabled>{{ field }}</td>
+                        <td class="tablecont">{{ field }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -28,12 +31,14 @@
             <td colspan=2>
                 <table>
                     <tr>
-                        <td class="buttoncell"><a href="{% url 'list_ticket' %}"><button class="btn" type="button">Zurück</button></a></td>       
-                        <td class="buttoncell"><a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Bearbeiten</button></a></td>
-                        <td class="buttoncell"><a href="{% url 'close_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Abschließen</button></a></td>
+                        {% csrf_token %}
+                        <td class="buttoncell"><input class="btn" type="submit" value="Übersicht" name="cancel"></td>       
+                        <td class="buttoncell"><input class="btn" type="submit" value="Speichern" name="confirm"></td>
+                        <td class="buttoncell"><input class="btn" type="submit" value="Abschließen" name="close"></td>
                     </tr>
                 </table>
             </td>
         </tr>
     </table>
+    </form>
 {% endblock %}

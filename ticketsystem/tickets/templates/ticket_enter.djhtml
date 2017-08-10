@@ -1,23 +1,30 @@
 {% extends "base.djhtml" %}
 {% block title %} RG - Ticket erstellen {% endblock %}
 
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
 {% block pagecontent %}
     <h1>Ticket erstellen</h1>
-    {% if form.errors %}
-        <p style="color: red;">
-            Bitte angezeigte/n Fehler korrigieren!
-        </p>
-    {% else %}
-        {% if thx %}
-            <p><strong>Ihr Ticket wurde erfolgreich erstellt!</strong></p>
-        {% endif %}
-    {% endif %}
 
     <form action="" method="post" novalidate>
         <table>
-            {{ form.as_table }}
+            {% for field in form %}
+            </tr>
+                <td class="heading">{{field.label}}</td>
+                <td>{{field}}</td>
+            </tr>
+            {% if field.errors %}
+            {% for err in field.errors %}
+            <tr>
+                <td colspan=2 style="color:red; font-weight:bold">{{ err }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+            <tr>
+                {% csrf_token %}
+                <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Submit"></td>
+            </tr>
         </table>
-        {% csrf_token %}
-        <input type="submit" value="Submit">
     </form>
 {% endblock %}

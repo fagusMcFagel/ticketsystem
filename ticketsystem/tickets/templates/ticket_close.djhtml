@@ -1,18 +1,28 @@
 {% extends "base.djhtml" %}
 {% block title %} RG - Ticket schließen {% endblock %}
 
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
 {% block pagecontent %}
-    
     <form action="" method="post" novalidate>
     <table>
         <tr>
             <td>
                 <table>
                     {% for field in closeform %}
-                    <tr>
+                    <tr>                        
                         <td class="heading">{{ field.label_tag}}</td>
                         <td class="tablecont">{{ field }}</td>
                     </tr>
+                    
+                    {% if field.errors %}
+                    {% for err in field.errors %}
+                    <tr>
+                        <td colspan=2 style="color:red; font-weight:bold;">{{ err }}</td>
+                    </tr>
+                    {% endfor%}
+                    {% endif%}
+                    
                     {% endfor %}
                 </table>
             </td>
@@ -27,13 +37,13 @@
                 </table>
             </td>
         </tr>
+    </table>
+    <table>
         <tr>
-            <td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></td>  
-            <td class="buttoncell"></td>
-            <td class="buttoncell">
-                {% csrf_token %}
-                <input class="btn" type="submit" name="close" value="Ticket schließen">
-            </td>
+            {% csrf_token %}
+            <td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Übersicht"></td>
+            <td class="buttoncell"><input class="btn" type="submit" name="edit" value="Bearbeiten"></td>
+            <td class="buttoncell"><input class="btn" type="submit" name="close" value="Ticket schließen"></td>
         </tr>
     </table>
     </form>

@@ -12,6 +12,7 @@
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/enter/">Eingabe</a></li>
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/overview/">Übersicht</a></li>
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/search/">Suche</a></li>
+            <li class="infomsg">{% block infomsg %}{% endblock %}</li>
         </ul>
         {% load static %}
         <img style="float:right;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img></li>
