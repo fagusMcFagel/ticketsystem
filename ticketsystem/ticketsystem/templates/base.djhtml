@@ -1,9 +1,0 @@
-<html>
-<head>
-    {% load static %}
-    <link rel="stylesheet" type="text/css" href={% static 'tickets/stylesheet.css'%}>
-    <title>{% block title %}RG - Tickets{% endblock %}
-</head>
-<body>
-</body>
-</html>

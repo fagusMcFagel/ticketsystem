@@ -1,4 +1,4 @@
-body{
+body {
     font-family: "Calibri";
     font-size: 16pt;
 }
@@ -19,14 +19,14 @@ table.list {
     background-color: rgb(70,140,180);
 }
 
-.buttoncell{
+.buttoncell {
     text-align:center;
     padding-top:10px;
     width:200px;
     height:20px;
 }
 
-.heading{
+.heading {
     font-size: 14pt;
     font-weight:bold;
     text-align:center;
@@ -40,7 +40,7 @@ table.list td {
 
 }
 
-ul.nvgtbar{
+ul.nvgtbar {
     position:fixed;
     top:0;
     width:100%;
@@ -70,6 +70,14 @@ a.nvgtlink {
     display: block;
     color: white;
     text-decoration:none;
+}
+
+.idlink {
+    padding: 0px 20px;
+    font-size:16pt;
+    color: blue;
+    text-decoration:none;
+    text-weight:bold;
 }
 
 img.rglogo {

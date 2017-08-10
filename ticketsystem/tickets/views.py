@@ -276,7 +276,23 @@ def search_tickets(request):
             # one liner form of version with one Q object
             query = reduce(lambda q,key: q&Q(**{key: query_dict[key]}), query_dict, Q())             
             tickets = Ticket.objects.filter(query)
-            return render(request, 'ticket_search.djhtml', {'searchform':searchform})
+            
+            #get fieldnames from Ticket model
+            fieldnames=[]
+            
+            #displayed error can be ignored as the _meta delivers methods to get
+            #single or multiple fields from models
+            for field in Ticket._meta.get_fields():
+                fieldnames.append(field.verbose_name)
+            
+            #generate list from query results
+            results=[]
+            for ticket in tickets:
+                results.append(model_to_dict(ticket))
+            
+            return render(request, 'ticket_search.djhtml', {'searchform':searchform,
+                                                            'results':results, 
+                                                            'fieldnames':fieldnames})
         else:
             return HttpResponse("Form not valid")
     #send Http403 to non GET requests

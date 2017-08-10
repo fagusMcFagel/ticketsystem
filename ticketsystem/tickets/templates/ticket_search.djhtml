@@ -5,7 +5,32 @@
     <form action="" method="get" novalidate>
     <table>
         {{ searchform.as_table }}
-    </table>
-    <input type="submit" value="Suchen">
-    <form>
+        <tr>
+            <td class="buttoncell"><input class="btn" type="submit" value="Suchen"></td>
+            <td class="buttoncell"></td>
+        </tr>
+    </table> 
+    </form>
+    
+    <table class="list" border="1" cellspacing="0" cellpadding="4px">
+    <tr>
+    {% for name in fieldnames %}
+        <td style="font-weight:bold;">{{ name }}</td>
+    {% endfor %}
+    </tr>
+    
+    {% for ticket in results %}
+        <tr>
+            {% for key, value in ticket.items %}
+                <td class="tablecont">
+                {% if key == "ticketid" %}
+                <a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ value }}</a>
+                {% else %}
+                {{ value }}             
+                {% endif %}   
+                </td>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+    </table>   
 {% endblock %}

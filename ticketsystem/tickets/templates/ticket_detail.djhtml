@@ -28,14 +28,14 @@
             <td colspan=2>
                 <table>
                     <tr>
-                        <td class="buttoncell"><a href={% url 'list_ticket' %}><button class="btn" type="button">Zurück</button></a></td>       
+                        <td class="buttoncell"><a href="{% url 'list_ticket' %}"><button class="btn" type="button">Zurück</button></a></td>       
                         <td class="buttoncell">
                             {% if readonly %}
-                            <a href="edit"><button class="btn" type="button">Bearbeiten</button></a>
+                            <a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Bearbeiten</button></a>
                             {% else %}
                             {% endif %}
                         </td>
-                        <td class="buttoncell"><a href="close"><button class="btn" type="button">Abschließen</button></a></td>
+                        <td class="buttoncell"><a href="{% url 'close_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Abschließen</button></a></td>
                     </tr>
                 </table>
             </td>
