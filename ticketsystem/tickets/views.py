@@ -13,11 +13,18 @@ from _functools import reduce
 #needed later
 #from django.core.mail import send_mail, get_connection
 
-#function for 'tickets/login'
+
+
+"""
+#view function for login
+#parameter: HttpRequest request
+#URL:'tickets/login'
+"""
 def login_user(request):
     #initialize variables error and login_user
     error = False
     logged_in_user = None
+    infomsg=''
     
     #when login form is submitted, validate fields 
     #and logout currently logged in user if necessary
@@ -47,12 +54,27 @@ def login_user(request):
             logged_in_user = request.user
         #set empty login form
         form = LoginForm()
+        
+        if request.GET.get('status') :
+            if request.GET['status']=='required':
+                infomsg='Login erforderlich!'
+
     
     return render(request, 'ticket_login.djhtml', {'form':form,
                                                    'error':error,
-                                                   'login_user':logged_in_user})
+                                                   'login_user':logged_in_user,
+                                                   'infomsg':infomsg})
 
-#function for 'tickets/enter'
+
+
+"""
+#view function for creating a new ticket
+#lets the user choose sector and category
+#and requires input for subject and description
+#parameter: HttpRequest request
+#URL:'tickets/enter'
+#NO LOGIN REQUIRED
+"""
 def enter_ticket(request):
     #initialize thx with false -> don't display thank you message
     infomsg=''
@@ -68,7 +90,7 @@ def enter_ticket(request):
 
             #initialize ticket object t with form data
             #ticket id increments automatically
-            #fields mustn't be NULL -> initalized with '' (empty String)
+            #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
             t = Ticket(sector=cd['sector'], category=cd['category'],
                        subject=cd['subject'], description=cd['description'],
                        creationdatetime = now, status='open',
@@ -90,8 +112,16 @@ def enter_ticket(request):
     #form: form to be displayed for ticket entering; thx: display thanks-message 
     return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
 
-#function for 'tickets/overview'
-@login_required(login_url='/tickets/login/')
+
+
+"""
+#view function for displaying a user's tickets
+#displays a list of open tickets for all groups/sectors the user's in on the left (NO responsible_person specified)
+#and a list of open tickets for which he is entered as responsible_person
+#parameter: HttpRequest request
+#URL:'tickets/overview'
+"""
+@login_required(login_url='/tickets/login/?status=required')
 def show_ticket_list(request):
     
     #build list of all groups the user is part of
@@ -123,8 +153,16 @@ def show_ticket_list(request):
                                                       'tickets_user':tickets_user,
                                                       'infomsg':infomsg})
 
-#function for 'tickets/d{1,4}'
-@login_required(login_url='/tickets/login/')
+
+
+"""
+#view function for viewing a ticket/'s data
+#submit options for: 
+#back to overview, change to editing, change to closing the ticket(redirect)
+#parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
+#URL:'tickets/<ticketid>/'
+"""
+@login_required(login_url='/tickets/login/?status=required')
 def show_ticket_detail(request, ticketid):
     if request.method=="GET":
         #query for ticket with given id
@@ -161,37 +199,40 @@ def show_ticket_detail(request, ticketid):
     else:
         return HttpResponseForbidden()
 
+
+
 """
-#view function for closing a ticket
+#view function for editing a ticket/'s data
 #lets the user enter data for status, comment, solution and keywords
-#submit
-#submit option for closing the ticket -> validates the data and either
-#closes the ticket or displays errors in the form fields 
-#parameter: HttpRequest request, ticketid (must have a String representation)
-#URL:'tickets/<ticketid>/close'
+#submit options for: 
+#back to overview, takeover(declare yourself responsible),
+#save the currently entered data, closing the ticket(redirect)
+#parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
+#URL:'tickets/<ticketid>/edit'
 """
-@login_required(login_url='/tickets/login/')
+@login_required(login_url='/tickets/login/?status=required')
 def edit_ticket_detail(request, ticketid):
-    #if user is ticket creator or has permissions to change tickets 
-    if request.user.has_perm('tickets.change_ticket'):
-        if request.method=="GET":
-            #query for ticket with given id
-            try:
-                ticket = Ticket.objects.get(ticketid=str(ticketid))
-            #catch possible exceptions
-            except Exception as e:
-                if isinstance(e, Ticket.DoesNotExist):
-                    return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"No Ticket found for this ID"})
-                elif isinstance(e, Ticket.MultipleObjectsReturned):
-                    return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"More than one ticket found for this ID"})
-                else:
-                    return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"An unknown error occured"})
-            else:
-                # FIXME: no ticket found -> id is illegal (when entered in browser bar)
-                
+    #query for ticket with given id, catch possible exceptions
+    try:
+        ticket = Ticket.objects.get(ticketid=str(ticketid))
+        #catch possible exceptions
+    except Exception as e:
+        if isinstance(e, Ticket.DoesNotExist):
+            return render(request, 'ticket_error.djhtml', 
+                      {'errormsg':"No Ticket found for this ID"})
+        elif isinstance(e, Ticket.MultipleObjectsReturned):
+            return render(request, 'ticket_error.djhtml', 
+                      {'errormsg':"More than one ticket found for this ID"})
+        else:
+            return render(request, 'ticket_error.djhtml', 
+                      {'errormsg':"An unknown error occured"})
+    else:                
+        #if user has permissions to change tickets and no other user is responsible for the ticket
+        if request.user.has_perm('tickets.change_ticket') and \
+            ticket.responsible_person in ['', request.user.username]:
+            
+            #GET request, display of input fields (with current data)
+            if request.method=="GET":
                 #convert ticket to dictionary with it's data
                 ticket_dict = model_to_dict(ticket)
         
@@ -199,50 +240,75 @@ def edit_ticket_detail(request, ticketid):
                 editform = EditableDataForm(initial=ticket_dict)
                 return render(request, 'ticket_edit.djhtml',
                               {'detailform':detailform,'editform':editform})
-        elif request.method=="POST":
-            infomsg=''
-            #when editing is canceled (button "Übersicht" clicked) -> redirect
-            if "cancel" in request.POST:
-                return HttpResponseRedirect("/tickets/overview")
-            #redirect to closing for when button "Abschließen" is clicked
-            elif "close" in request.POST:
-                return HttpResponseRedirect("/tickets/"+ticketid+"/close")
-            #check input data and update database when button "Speichern" is clicked
-            elif "confirm" in request.POST:
-                editform = EditableDataForm(request.POST)
-                try:
-                    ticket = Ticket.objects.get(ticketid=str(ticketid))
-                    #catch possible exceptions
-                except Exception as e:
-                    if isinstance(e, Ticket.DoesNotExist):
-                        return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"No Ticket found for this ID"})
-                    elif isinstance(e, Ticket.MultipleObjectsReturned):
-                        return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"More than one ticket found for this ID"})
-                    else:
-                        return render(request, 'ticket_error.djhtml', 
-                              {'errormsg':"An unknown error occured"})
-                else:
-                    detailform = DetailForm(initial=model_to_dict(ticket))
-                    if editform.is_valid():
-                        #get cleaned data from editable fields
-                        cd = editform.cleaned_data
+            
+            #POST request, form was submitted, data will be validated and database updated (if input correct)
+            elif request.method=="POST":
+                infomsg=''
+                
+                #when editing is canceled (button "Übersicht" clicked) -> redirect
+                if "cancel" in request.POST:
+                    return HttpResponseRedirect("/tickets/overview")
+                
+                #redirect to closing for when button "Abschließen" is clicked
+                elif "close" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/close")
+                
+                #change responsible person to currently logged in user
+                elif "takeover" in request.POST:     
+                    if ticket.responsible_person=='':
+                        Ticket.objects.filter(ticketid=str(ticketid)).update(responsible_person=request.user.username)
+                        infomsg='Ticket übernommen'
+                    elif ticket.responsible_person!=request.user.username:
+                        infomsg='Ticketübernahme nicht möglich'
                         
-                        Ticket.objects.filter(ticketid=str(ticketid)).update(
-                                                                        status=cd['status'],
-                                                                        comment=cd['comment'],
-                                                                        solution = cd['solution'],
-                                                                        keywords =cd['keywords']
-                                                                        )
-                        infomsg='Änderungen gespeichert!'
+                    ticket=Ticket.objects.get(ticketid=str(ticketid))
+                    #convert ticket to dictionary with it's data
+                    ticket_dict = model_to_dict(ticket)
+        
+                    detailform = DetailForm(initial=ticket_dict)
+                    editform = EditableDataForm(initial=ticket_dict)
                     
-                return render(request, 'ticket_edit.djhtml',
-                              {'detailform':detailform,'editform':editform,
-                               'infomsg':infomsg})
-    else:
-        # FIXME: display permission failure
-        return HttpResponseForbidden()
+                    return render(request, 'ticket_edit.djhtml', {'editform':editform, 
+                                                                  'detailform':detailform, 
+                                                                  'infomsg':infomsg})
+                
+                #check input data and update database when button "Speichern" is clicked
+                elif "confirm" in request.POST:
+                    #init form with POST data
+                    editform = EditableDataForm(request.POST)
+                    detailform = DetailForm(initial=model_to_dict(ticket))
+                    
+                    #check user input for validity
+                    if editform.is_valid():
+                        #get cleaned data and update ticket in database
+                        cd = editform.cleaned_data   
+                        Ticket.objects.filter(ticketid=str(ticketid)).update(
+                                                                    status=cd['status'],
+                                                                    comment=cd['comment'],
+                                                                    solution = cd['solution'],
+                                                                    keywords =cd['keywords']
+                                                                    )
+                        infomsg='Änderungen gespeichert!'
+                    else:
+                        infomsg='Fehlerhafte Eingabe(n)'
+                
+                    return render(request, 'ticket_edit.djhtml',
+                                  {'detailform':detailform,'editform':editform,
+                                   'infomsg':infomsg})
+        
+        #if user mustn't edit tickets or another user is specified as responsible_person
+        else:
+            #display error template with error description
+            if not request.user.has_perm('tickets.change_ticket'):
+                errormsg = 'Sie haben nicht die Berechtigung Tickets zu bearbeiten!'
+            elif ticket.responsible_person!='' and \
+                ticket.responsible_person!=request.user.username:
+                errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
+            else:
+                errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
+            return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
+
+
 
 """
 #view function for closing a ticket
@@ -251,69 +317,85 @@ def edit_ticket_detail(request, ticketid):
 #submit option for closing the ticket -> validates the data and either
 #updates the database and returns to the overview with a message
 #or displays errors in the closing forms fields 
-#parameter: HttpRequest request, ticketid (must have a String representation)
+#parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/close'
 """
-@login_required(login_url='/tickets/login/')
+@login_required(login_url='/tickets/login/?status=required')
 def close_ticket(request, ticketid):
-    #Get-Request -> Clicked Button 'Abschließen' in ticket details
-    if request.user.has_perm('tickets.change_ticket'):
-        if request.method=="GET":
-            #query for ticket with given id
-            try:
-                ticket = Ticket.objects.get(ticketid=str(ticketid))
-            #catch possible exceptions
-            except Exception as e:
-                if isinstance(e, Ticket.DoesNotExist):
-                    return HttpResponse("No Ticket")
-                elif isinstance(e, Ticket.MultipleObjectsReturned):
-                    return HttpResponse("Too many Tickets")
-                else:
-                    return HttpResponse("Unknown error")
-            else:
-                ticket.status='closed'
-                
-                # FIXME: no ticket found -> id is illegal (when entered in browser bar)
-                
-                #convert ticket to dictionary with it's data
-                ticket_dict = model_to_dict(ticket)
-                
-                #if user has permissions to change tickets 
-                if request.user.has_perm('tickets.change_ticket'):
-                    detailform = DetailForm(initial=ticket_dict)
-                    closeform = ClosingDataForm(initial=ticket_dict)
-                    return render(request, 'ticket_close.djhtml', {'detailform':detailform,
-                                                                    'closeform':closeform
-                                                                    })
-        #Post-Request -> Clicked Button 'Close'/'Abschließen' in closing template
-        elif request.method=="POST":
-            if "cancel" in request.POST:
-                return HttpResponseRedirect("/tickets/overview")
-            elif "edit" in request.POST:
-                return HttpResponseRedirect("/tickets/"+ticketid+"/edit")
-            elif "close" in request.POST:
-                closeform=ClosingDataForm(request.POST)
-                #if the data is valid, update ticket in database with entered data
-                if closeform.is_valid():
-                    Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
-                                                                    solution = closeform.cleaned_data['solution'],
-                                                                      keywords = closeform.cleaned_data['keywords'],
-                                                                      closingdatetime = timezone.now(),
-                                                                      status = "closed")
-                    return HttpResponseRedirect('/tickets/overview/?status=closed')
-                #if data is invalid, display the same template with error messages
-                else:
-                    ticket = Ticket.objects.get(ticketid=str(ticketid))
-                    ticket_dict = model_to_dict(ticket)
-                    detailform = DetailForm(initial=ticket_dict)
-                    return render(request, 'ticket_close.djhtml',
-                                  {'detailform':detailform, 'closeform':closeform})
-        #block other request forms with a HTTP 403 (Forbidden) Response
+    #query for ticket with given id
+    try:
+        ticket = Ticket.objects.get(ticketid=str(ticketid))
+    #catch possible exceptions
+    except Exception as e:
+        if isinstance(e, Ticket.DoesNotExist):
+            return HttpResponse("No Ticket")
+        elif isinstance(e, Ticket.MultipleObjectsReturned):
+            return HttpResponse("Too many Tickets")
         else:
-            return HttpResponseForbidden()
-    else:
-        # FIXME: display permission failure
-        return HttpResponse("Bitte einloggen!")
+            return HttpResponse("Unknown error")
+    #if correct ticket was found
+    else:                
+
+        #if user is allowed to edit tickets and no other user is specified as responsible
+        if request.user.has_perm('tickets.change_ticket') and \
+            ticket.responsible_person in ['', request.user.username]:
+            
+            #GET request display ticket_close template for user input
+            if request.method=="GET":
+                    
+                #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
+                ticket_dict = model_to_dict(ticket)
+                ticket_dict['status':'Abgeschlossen']
+                
+                detailform = DetailForm(initial=ticket_dict)
+                closeform = ClosingDataForm(initial=ticket_dict)
+                return render(request, 'ticket_close.djhtml', {'detailform':detailform,
+                                                                'closeform':closeform
+                                                                })
+            #POST request check form data for validity and update database if form is correct
+            elif request.method=="POST":
+                #if button for overview is clicked -> redirect
+                if "cancel" in request.POST:
+                    return HttpResponseRedirect("/tickets/overview")
+                #if button for editing is clicked -> redirect to editing form
+                elif "edit" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/edit")
+                #if button for closing the ticket is clicked -> check input, update db
+                elif "close" in request.POST:
+                    #init form object with POST data
+                    closeform=ClosingDataForm(request.POST)
+                    
+                    #if the data is valid, update ticket in database with entered data
+                    if closeform.is_valid():
+                        Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
+                                                                        solution = closeform.cleaned_data['solution'],
+                                                                        keywords = closeform.cleaned_data['keywords'],
+                                                                        closingdatetime = timezone.now(),
+                                                                        status = "closed")
+                        return HttpResponseRedirect('/tickets/overview/?status=closed')
+                    
+                    #if data is invalid, display the current template with an additional error messages
+                    else:
+                        ticket = Ticket.objects.get(ticketid=str(ticketid))
+                        ticket_dict = model_to_dict(ticket)
+                        detailform = DetailForm(initial=ticket_dict)
+                        return render(request, 'ticket_close.djhtml',
+                                      {'detailform':detailform, 'closeform':closeform})
+            #block other request forms with a HTTP 403 (Forbidden) Response
+            else:
+                return HttpResponseForbidden()
+        
+        #if user mustn't edit tickets or another user is specified as responsible_person
+        else:
+            #display error template with error description
+            if not request.user.has_perm('tickets.change_ticket'):
+                errormsg = 'Sie haben nicht die Berechtigung Tickets zu bearbeiten!'
+            elif ticket.responsible_person!='' and \
+                ticket.responsible_person!=request.user.username:
+                errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
+            else:
+                errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
+            return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
 
 
 """
@@ -323,7 +405,7 @@ def close_ticket(request, ticketid):
 #parameter: HttpRequest request
 #URL:'tickets/search'
 """
-@login_required(login_url='/tickets/login/')
+@login_required(login_url='/tickets/login/?status=required')
 def search_tickets(request):
     if request.method=="GET":
         #initialize searchform with GET data
@@ -335,35 +417,34 @@ def search_tickets(request):
             query_dict = {}
             
             #check all fields/keys for data entered, adjust keys depending on
-            #their properties (full text, choice, char...?) and save the adjusted
-            #key-value-pairs in query_dict
+            #the field's properties (full text, choice, char...?)
+            #save the adjusted key-value pairs in query_dict
             for key in searchterms:
                 if searchterms[key]!='' and searchterms[key] is not None:
+                    
+                    #####
                     # TODO: full text will only work with MySQL (or postgreSQL); 
                     # full text indices must be configured directly in db manager
+                    #####
                     
-                    #use __search -> full text search for these fields
+                    #append '__search' -> full text search for these fields
                     if key=='description' or key=='solution' or key=='comment':
                         key = key+'__search'
-                    #use __contains -> SQL "LIKE '%...%'" for non-choice-fields
+                    #append '__contains' -> in SQL "LIKE '%...%'" for non-choice-fields
                     elif key!='sector' and key!='category' and key!='status':
                         key = key+'__contains'
-                    #else: key=key, relevant for choice fields only
+                    #else: key is unchanged -> in SQL "='...'"
                     
                     query_dict[key]=searchterms[key]
             
-            # build query from entered data via _functools.reduce and '&'
-            # as a Q object
+            # build query from entered data via _functools.reduce and '&' as Q object
             # one liner form of version with one Q object
             query = reduce(lambda q,key: q&Q(**{key: query_dict[key]}), query_dict, Q())             
             tickets = Ticket.objects.filter(query)
             
-            #get fieldnames from Ticket model
+            #store field names of model in fieldnames[] 
             fieldnames=[]
-            
-            #displayed error can be ignored as the _meta delivers methods to get
-            #single or multiple fields from models
-            for field in Ticket._meta.get_fields():
+            for field in Ticket._meta.get_fields(): #@UndefinedVariable (needed for error suppression)
                 fieldnames.append(field.verbose_name)
             
             #generate list from query results
@@ -371,6 +452,7 @@ def search_tickets(request):
             for ticket in tickets:
                 results.append(model_to_dict(ticket))
             
+            #return ticket search template with searchform and result list
             return render(request, 'ticket_search.djhtml', {'searchform':searchform,
                                                             'results':results, 
                                                             'fieldnames':fieldnames})
@@ -380,6 +462,9 @@ def search_tickets(request):
     else:
         return HttpResponseForbidden()
 
+
+
+########################################
 # OTHER VERSIONS OF BUILDING THE QUERY
 # TODO: Remove comments in final version
             #Version with list of Q objects

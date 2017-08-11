@@ -32,7 +32,8 @@
                 <table>
                     <tr>
                         {% csrf_token %}
-                        <td class="buttoncell"><input class="btn" type="submit" value="Übersicht" name="cancel"></td>       
+                        <td class="buttoncell"><input class="btn" type="submit" value="Übersicht" name="cancel"></td> 
+                        <td class="buttoncell"><input class="btn" type="submit" value="Übernehmen" name="takeover"></td>      
                         <td class="buttoncell"><input class="btn" type="submit" value="Speichern" name="confirm"></td>
                         <td class="buttoncell"><input class="btn" type="submit" value="Abschließen" name="close"></td>
                     </tr>
