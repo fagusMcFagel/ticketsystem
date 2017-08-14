@@ -9,9 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
 from django.utils import timezone
 from _functools import reduce
-
-#needed later
-#from django.core.mail import send_mail, get_connection
+from django.core.mail import send_mail, get_connection
 
 
 
@@ -345,7 +343,7 @@ def close_ticket(request, ticketid):
                     
                 #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
                 ticket_dict = model_to_dict(ticket)
-                ticket_dict['status':'Abgeschlossen']
+                ticket_dict['status']='Abgeschlossen'
                 
                 detailform = DetailForm(initial=ticket_dict)
                 closeform = ClosingDataForm(initial=ticket_dict)
@@ -366,17 +364,22 @@ def close_ticket(request, ticketid):
                     closeform=ClosingDataForm(request.POST)
                     
                     #if the data is valid, update ticket in database with entered data
-                    if closeform.is_valid():
+                    if closeform.is_valid():                    
                         Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
                                                                         solution = closeform.cleaned_data['solution'],
                                                                         keywords = closeform.cleaned_data['keywords'],
                                                                         closingdatetime = timezone.now(),
-                                                                        status = "closed")
+                                                                        status = "closed",
+                                                                        responsible_person=request.user.username)
+                        
+                        sendTicketCloseMail(model_to_dict(ticket))
+
                         return HttpResponseRedirect('/tickets/overview/?status=closed')
+                        
+
                     
                     #if data is invalid, display the current template with an additional error messages
                     else:
-                        ticket = Ticket.objects.get(ticketid=str(ticketid))
                         ticket_dict = model_to_dict(ticket)
                         detailform = DetailForm(initial=ticket_dict)
                         return render(request, 'ticket_close.djhtml',
@@ -396,6 +399,26 @@ def close_ticket(request, ticketid):
             else:
                 errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
             return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
+
+
+
+"""
+# separate funcion which sends a mail to ticket_dict['creator']
+# informing the creator that the ticket with ID ticket_dict['ticketid'] has
+# been closed by user ticket_dict['responsible_person']
+"""
+def sendTicketCloseMail(ticket_dict):
+    subject = "Ihr Ticket #"+str(ticket_dict['ticketid'])+" wurde abgeschlossen"
+    
+    message = "Das von Ihnen erstellte Ticket mit der ID "+str(ticket_dict['ticketid'])+\
+            " wurde vom Benutzer "+ticket_dict['responsible_person']+" abgeschlossen!"
+    
+    receiver = [ticket_dict['creator']+"@rgoebel.de"]
+    
+    con = get_connection('django.core.mail.backends.console.EmailBackend')
+    
+    send_mail(subject, message, "ticket@rgoebel.de", receiver, connection=con)
+
 
 
 """
