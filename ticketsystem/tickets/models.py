@@ -25,6 +25,8 @@ class Ticket(models.Model):
     closingdatetime = models.DateTimeField(null=True, blank=True, verbose_name="Abschlussdatum")
     workinghours = models.FloatField(default=0.0, verbose_name="Bearbeitungszeit")
     
+    image = models.FileField(null=True, blank=True, upload_to='uploads/')
+    
 
     
     

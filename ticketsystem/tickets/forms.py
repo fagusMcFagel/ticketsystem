@@ -23,6 +23,7 @@ class DetailForm(forms.Form):
     subject = forms.CharField(max_length=50, disabled=True, label="Betreff")
     description = forms.CharField(widget=forms.Textarea, max_length=400, disabled=True, label="Beschreibung")
     creationdatetime = forms.DateField(widget=forms.DateInput, disabled=True, label="Erstellungsdatum")
+    image = forms.FileField(disabled=True, label="Screenshot")
 
     # TODO: create separate class Person and change to foreign key?
     responsible_person = forms.CharField(max_length=40, disabled=True, label="Verantwortlicher")

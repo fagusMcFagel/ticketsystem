@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+from django.conf.global_settings import MEDIA_ROOT
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,7 +28,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-UPLOAD_DIRECTORY='C:/Users/Forner/git/ticketsystem/ticketsystem/tempfiles'
+UPLOAD_DIRECTORY='C:/Users/Forner/git/ticketsystem/ticketsystem/tempfiles/'
+MEDIA_ROOT = 'C:/Users/Forner/git/ticketsystem/ticketsystem/tempfiles/'
 
 # Application definition
 

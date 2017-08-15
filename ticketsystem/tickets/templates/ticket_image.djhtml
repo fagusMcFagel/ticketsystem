@@ -1,0 +1,12 @@
+{% extends "base.djhtml" %}
+{% block title %} RG - Ticket Screenshot {% endblock %}
+
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
+{% block pagecontent %}
+    <h1 style="margin-left:10px">Screenshot zu Ticket #{{ ticketid }}</h1>
+
+    <div style="margin-left:10px">
+        <img src="{{ url }}" alt='screenshot {{ ticketid }}'>
+    </div>
+{% endblock %}

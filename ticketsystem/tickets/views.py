@@ -88,7 +88,13 @@ def enter_ticket(request):
             #get cleaned data and current system time
             cd = form.cleaned_data
             now = timezone.now()
-
+            img = ''
+            
+            if request.FILES['image']:
+                if imghdr.what(request.FILES['image']):
+                    img= request.FILES['image']
+            
+            
             #initialize ticket object t with form data
             #ticket id increments automatically
             #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
@@ -97,7 +103,8 @@ def enter_ticket(request):
                        creationdatetime = now, status='open',
                        creator=request.META['USERNAME'],
                        responsible_person='',
-                       comment='', solution='',keywords=''
+                       comment='', solution='',keywords='',
+                       image=img
             )
 
             #save data set to database
@@ -127,10 +134,11 @@ def handle_file_upload(file, imgname):
     if imghdr.what(file):
         print(imghdr.what(file))
         if isinstance(file, File):
-            dstdir = open(settings.UPLOAD_DIRECTORY+"/"+imgname+"."+imghdr.what(file), 'wb+')
+            dstdir = open(settings.UPLOAD_DIRECTORY+imgname+"."+imghdr.what(file), 'wb+')
             print(settings.UPLOAD_DIRECTORY+imgname)
             for chunk in file.chunks():
                 dstdir.write(chunk)
+            dstdir.close()
             print("File written")
     else:
         print('DO I LOOK LIKE I KNOW WHAT A JAY PAG IS?')
@@ -509,6 +517,24 @@ def search_tickets(request):
     else:
         return HttpResponseForbidden()
 
+
+def show_ticket_image(request, ticketid):
+    try:
+        ticket = Ticket.objects.get(ticketid=str(ticketid))
+    except:
+        return render(request, 'ticket_error.djhtml', {'errormsg':'Kein Ticket mit dieser ID!'})
+    else:
+        return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid), 'url':ticket.image.url})
+    
+def get_ticket_image(request, ticketid, imgname):
+    print(settings.MEDIA_ROOT+"uploads/"+imgname)
+    try:
+        img = open(settings.MEDIA_ROOT+"uploads/"+imgname, "rb+")
+        imgtype= imghdr.what(img)
+        print("Return incoming...")        
+        return HttpResponse(img.read(), content_type="image/"+imgtype)
+    except:
+        return render(request, 'ticket_error.djhtml', {'errormsg':'Fehler beim lesen des Screenshots!'})
 
 
 ########################################
