@@ -27,7 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-UPLOAD_DIRECTORY='C:\Users\Forner\git\ticketsystem\ticketsystem'
+UPLOAD_DIRECTORY='C:/Users/Forner/git/ticketsystem/ticketsystem/tempfiles'
 
 # Application definition
 

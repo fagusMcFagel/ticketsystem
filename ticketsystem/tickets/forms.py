@@ -7,7 +7,7 @@ class EnterTicketForm(forms.Form):
     category = forms.ChoiceField(choices = Ticket.CATEGORY_CHOICES, label="Art")
     subject = forms.CharField(max_length=50, label="Betreff")
     description = forms.CharField(max_length=400,widget=forms.Textarea, label="Beschreibung")
-    image = forms.ImageField()
+    image = forms.FileField()
 
 #form for entering login data
 class LoginForm(forms.Form):
