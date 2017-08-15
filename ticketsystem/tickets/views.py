@@ -10,6 +10,8 @@ from django.forms.models import model_to_dict
 from django.utils import timezone
 from _functools import reduce
 from django.core.mail import send_mail, get_connection
+from django.core.files.base import File
+from ticketsystem import settings
 
 
 
@@ -78,10 +80,14 @@ def enter_ticket(request):
     infomsg=''
     if request.method=="POST":
         #set form as EnterTicketForm-Object with the POST-data
-        form = EnterTicketForm(request.POST)
+        form = EnterTicketForm(request.POST, request.FILES)
 
         #create an entry in the database with the entered data
         if form.is_valid():
+            #if a file 'image' is contained in the request -> handle upload
+            if request.FILES['image']:
+                handle_file_upload(request.FILES['image'])
+                
             #get cleaned data and current system time
             cd = form.cleaned_data
             now = timezone.now()
@@ -110,6 +116,17 @@ def enter_ticket(request):
     #form: form to be displayed for ticket entering; thx: display thanks-message 
     return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
 
+
+
+"""
+# takes file and writes it to the directory specified in the project settings
+# -> ticketsystem.ticketsystem.settings.UPLOAD_DIRECTORY
+"""
+def handle_file_upload(file):
+    if isinstance(file, File):
+        dstdir = open(settings.UPLOAD_DIRECTORY, 'wb+')
+        for chunk in file.chunks():
+            dstdir.write(chunk)
 
 
 """
