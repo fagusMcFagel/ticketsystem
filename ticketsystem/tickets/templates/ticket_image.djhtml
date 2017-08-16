@@ -7,6 +7,6 @@
     <h1 style="margin-left:10px">Screenshot zu Ticket #{{ ticketid }}</h1>
 
     <div style="margin-left:10px">
-        <img src="{{ url }}" alt='screenshot {{ ticketid }}'>
+        <img src="{{ url }}" alt='screenshot {{ url }}'>
     </div>
 {% endblock %}

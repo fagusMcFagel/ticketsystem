@@ -22,6 +22,7 @@ import imghdr
 #URL:'tickets/login'
 """
 def login_user(request):
+
     #initialize variables error and login_user
     error = False
     logged_in_user = None
@@ -88,8 +89,11 @@ def enter_ticket(request):
             #get cleaned data and current system time
             cd = form.cleaned_data
             now = timezone.now()
+            
+            #initialize img as empty string
             img = ''
             
+            #check if an image file was uploaded and if so set img to the file
             if request.FILES['image']:
                 if imghdr.what(request.FILES['image']):
                     img= request.FILES['image']
@@ -110,10 +114,6 @@ def enter_ticket(request):
             #save data set to database
             t.save()
             
-            #if a file 'image' is contained in the request -> handle upload
-            if request.FILES['image']:
-                handle_file_upload(request.FILES['image'], "ID_"+str(t.ticketid)+"_1")
-            
             #reset form and display thank-you-message
             infomsg='Ticket erfolgreich erstellt!'
             form=EnterTicketForm()    
@@ -126,22 +126,20 @@ def enter_ticket(request):
 
 
 
-"""
-# takes file and writes it to the directory specified in the project settings
-# -> ticketsystem.ticketsystem.settings.UPLOAD_DIRECTORY
-"""
-def handle_file_upload(file, imgname):
-    if imghdr.what(file):
-        print(imghdr.what(file))
-        if isinstance(file, File):
-            dstdir = open(settings.UPLOAD_DIRECTORY+imgname+"."+imghdr.what(file), 'wb+')
-            print(settings.UPLOAD_DIRECTORY+imgname)
-            for chunk in file.chunks():
-                dstdir.write(chunk)
-            dstdir.close()
-            print("File written")
-    else:
-        print('DO I LOOK LIKE I KNOW WHAT A JAY PAG IS?')
+### FILE UPLOAD HANDLED VIA MODEL; FUNCTION NOT NEEDED ###
+# """
+# # takes file and writes it to the directory specified in the project settings
+# # -> ticketsystem.ticketsystem.settings.UPLOAD_DIRECTORY
+# """
+# def handle_file_upload(file, imgname):
+#     if imghdr.what(file):
+#         if isinstance(file, File):
+#             dstdir = open(settings.UPLOAD_DIRECTORY+imgname+"."+imghdr.what(file), 'wb+')
+#             print(settings.UPLOAD_DIRECTORY+imgname)
+#             for chunk in file.chunks():
+#                 dstdir.write(chunk)
+#             dstdir.close()
+#             print("File written")
 
 
 """
@@ -219,9 +217,11 @@ def show_ticket_detail(request, ticketid):
                 ):
                 detailform = DetailForm(initial=ticket_dict)
                 editform = EditableDataForm(initial=ticket_dict)
+                image = ticket_dict['image']
         
                 return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
-                                                                'editform':editform})
+                                                                'editform':editform,
+                                                                'hasImage':image})
             #if user is denied to view ticket data, return HTTP 403 Forbidden
             else:
                 return HttpResponseForbidden()
@@ -268,8 +268,10 @@ def edit_ticket_detail(request, ticketid):
         
                 detailform = DetailForm(initial=ticket_dict)
                 editform = EditableDataForm(initial=ticket_dict)
+                image = ticket_dict['image']
                 return render(request, 'ticket_edit.djhtml',
-                              {'detailform':detailform,'editform':editform})
+                              {'detailform':detailform,'editform':editform,
+                               'hasImage':image})
             
             #POST request, form was submitted, data will be validated and database updated (if input correct)
             elif request.method=="POST":
@@ -297,10 +299,12 @@ def edit_ticket_detail(request, ticketid):
         
                     detailform = DetailForm(initial=ticket_dict)
                     editform = EditableDataForm(initial=ticket_dict)
+                    image = ticket_dict['image']
                     
                     return render(request, 'ticket_edit.djhtml', {'editform':editform, 
                                                                   'detailform':detailform, 
-                                                                  'infomsg':infomsg})
+                                                                  'infomsg':infomsg,
+                                                                  'hasImage':image})
                 
                 #check input data and update database when button "Speichern" is clicked
                 elif "confirm" in request.POST:
@@ -322,9 +326,11 @@ def edit_ticket_detail(request, ticketid):
                     else:
                         infomsg='Fehlerhafte Eingabe(n)'
                 
+                    image = ticket_dict['image']
+
                     return render(request, 'ticket_edit.djhtml',
                                   {'detailform':detailform,'editform':editform,
-                                   'infomsg':infomsg})
+                                   'infomsg':infomsg, 'hasImage':image})
         
         #if user mustn't edit tickets or another user is specified as responsible_person
         else:
@@ -376,11 +382,13 @@ def close_ticket(request, ticketid):
                 #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
                 ticket_dict = model_to_dict(ticket)
                 ticket_dict['status']='Abgeschlossen'
-                
+
                 detailform = DetailForm(initial=ticket_dict)
                 closeform = ClosingDataForm(initial=ticket_dict)
+                image = ticket_dict['image']
                 return render(request, 'ticket_close.djhtml', {'detailform':detailform,
-                                                                'closeform':closeform
+                                                               'closeform':closeform,
+                                                               'hasImage':image
                                                                 })
             #POST request check form data for validity and update database if form is correct
             elif request.method=="POST":
@@ -414,8 +422,11 @@ def close_ticket(request, ticketid):
                     else:
                         ticket_dict = model_to_dict(ticket)
                         detailform = DetailForm(initial=ticket_dict)
+                        image = ticket_dict['image']
                         return render(request, 'ticket_close.djhtml',
-                                      {'detailform':detailform, 'closeform':closeform})
+                                      {'detailform':detailform, 
+                                       'closeform':closeform,
+                                       'hasImage':image})
             #block other request forms with a HTTP 403 (Forbidden) Response
             else:
                 return HttpResponseForbidden()
@@ -527,11 +538,9 @@ def show_ticket_image(request, ticketid):
         return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid), 'url':ticket.image.url})
     
 def get_ticket_image(request, ticketid, imgname):
-    print(settings.MEDIA_ROOT+"uploads/"+imgname)
     try:
         img = open(settings.MEDIA_ROOT+"uploads/"+imgname, "rb+")
-        imgtype= imghdr.what(img)
-        print("Return incoming...")        
+        imgtype= imghdr.what(img)  
         return HttpResponse(img.read(), content_type="image/"+imgtype)
     except:
         return render(request, 'ticket_error.djhtml', {'errormsg':'Fehler beim lesen des Screenshots!'})
