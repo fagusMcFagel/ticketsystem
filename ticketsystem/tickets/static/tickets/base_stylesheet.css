@@ -1,11 +1,7 @@
 body {
     font-family: "Calibri";
     font-size: 16pt;
-    margin:0;
-}
-
-table.list {
-    margin:0px 5px 5px 5px;
+    margin: 0;
 }
 
 .overviewlist {
@@ -20,10 +16,10 @@ table.list {
 }
 
 .btn {
-    color:white;
+    color: white;
     font-family: "Calibri";
     font-size: 12pt;
-    font-weight:bold;
+    font-weight: bold;
     background-color: rgb(0,68,107);
 }
 
@@ -32,16 +28,16 @@ table.list {
 }
 
 .buttoncell {
-    text-align:center;
-    padding-top:10px;
-    width:200px;
-    height:20px;
+    text-align: center;
+    padding-top: 10px;
+    width: 200px;
+    height: 20px;
 }
 
 .heading {
     font-size: 14pt;
-    font-weight:bold;
-    text-align:center;
+    font-weight: bold;
+    text-align: center;
 }
 
 .tablecont {
@@ -50,13 +46,13 @@ table.list {
 
 .tableheading {
     font-size: 16pt;
-    font-weight:bold;
-    text-align:center;
+    font-weight: bold;
+    text-align: center;
 }
 
 
 ul.nvgtbar {
-    position:fixed;
+    position: fixed;
     top:0;
     width:100%;
     list-style-type:none;
@@ -71,7 +67,7 @@ ul.nvgtbar {
 }
 
 li.nvgtbtn {
-    float:left;
+    float: left;
     background-color: rgb(0,68,107);
     border-right: 1px solid #ffffff;
     border-left: 0px;
@@ -80,7 +76,7 @@ li.nvgtbtn {
 
 li.infomsg {
     float:right;
-    margin-right:98px;
+    margin-right:90px;
     padding: 8px;
     color: lightgrey;
     background-color: rgb(0,68,107);
@@ -92,7 +88,7 @@ li.infomsg {
 
 a.nvgtlink {
     margin: 0;
-    padding:8px;
+    padding: 8px;
     text-align: center;
     display: block;
     color: white;

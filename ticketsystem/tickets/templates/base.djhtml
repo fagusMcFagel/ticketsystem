@@ -15,12 +15,12 @@
             <li class="infomsg">{% block infomsg %}{% endblock %}</li>
         </ul>
         {% load static %}
-        <img style="float:right;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img></li>
+        <img style="float:right;border-left:1px solid white;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img></li>
     </nav>
     <table cellspacing="0" cellpadding="0">
         <tr>
-            <td height="50px" width="15px" style="background-color:rgb(0,68,107)">
-            <td colspan=2 height="50px" style=""></td>
+            <td height="50px" width="15px" style="background-color:rgb(0,68,107)"></td>
+            <td colspan=2 height="50px"></td>
         </tr>
         <tr>
             <td width="15px" height="100%" style="background-color:rgb(0,68,107)"></td>

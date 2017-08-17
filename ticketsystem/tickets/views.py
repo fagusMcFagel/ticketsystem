@@ -10,7 +10,6 @@ from django.forms.models import model_to_dict
 from django.utils import timezone
 from _functools import reduce
 from django.core.mail import send_mail, get_connection
-from django.core.files.base import File
 from ticketsystem import settings
 import imghdr
 
@@ -94,7 +93,7 @@ def enter_ticket(request):
             img = ''
             
             #check if an image file was uploaded and if so set img to the file
-            if request.FILES['image']:
+            if request.FILES:
                 if imghdr.what(request.FILES['image']):
                     img= request.FILES['image']
             
