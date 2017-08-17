@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseRedirect
 from tickets.models import Ticket
 from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm,\
     ClosingDataForm, SearchForm
@@ -12,6 +12,7 @@ from _functools import reduce
 from django.core.mail import send_mail, get_connection
 from ticketsystem import settings
 import imghdr
+from django.contrib.auth.models import User
 
 
 
@@ -79,49 +80,50 @@ def login_user(request):
 def enter_ticket(request):
     #initialize thx with false -> don't display thank you message
     infomsg=''
-    if request.method=="POST":
-        #set form as EnterTicketForm-Object with the POST-data
-        form = EnterTicketForm(request.POST, request.FILES)
-
-        #create an entry in the database with the entered data
-        if form.is_valid():                
-            #get cleaned data and current system time
-            cd = form.cleaned_data
-            now = timezone.now()
-            
-            #initialize img as empty string
-            img = ''
-            
-            #check if an image file was uploaded and if so set img to the file
-            if request.FILES:
-                if imghdr.what(request.FILES['image']):
-                    img= request.FILES['image']
-            
-            
-            #initialize ticket object t with form data
-            #ticket id increments automatically
-            #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
-            t = Ticket(sector=cd['sector'], category=cd['category'],
-                       subject=cd['subject'], description=cd['description'],
-                       creationdatetime = now, status='open',
-                       creator=request.META['USERNAME'],
-                       responsible_person='',
-                       comment='', solution='',keywords='',
-                       image=img
-            )
-
-            #save data set to database
-            t.save()
-            
-            #reset form and display thank-you-message
-            infomsg='Ticket erfolgreich erstellt!'
-            form=EnterTicketForm()    
-    else:
-        #initialize empty form
-        form = EnterTicketForm()
+    if request.user().is_authenticated() or request.user.uid()==User.objects.filter(username=request.user.username).uid():
+        if request.method=="POST":
+            #set form as EnterTicketForm-Object with the POST-data
+            form = EnterTicketForm(request.POST, request.FILES)
     
-    #form: form to be displayed for ticket entering; thx: display thanks-message 
-    return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
+            #create an entry in the database with the entered data
+            if form.is_valid():                
+                #get cleaned data and current system time
+                cd = form.cleaned_data
+                now = timezone.now()
+                
+                #initialize img as empty string
+                img = ''
+                
+                #check if an image file was uploaded and if so set img to the file
+                if request.FILES:
+                    if imghdr.what(request.FILES['image']):
+                        img= request.FILES['image']
+                
+                
+                #initialize ticket object t with form data
+                #ticket id increments automatically
+                #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
+                t = Ticket(sector=cd['sector'], category=cd['category'],
+                           subject=cd['subject'], description=cd['description'],
+                           creationdatetime = now, status='open',
+                           creator=request.META['USERNAME'],
+                           responsible_person='',
+                           comment='', solution='',keywords='',
+                           image=img
+                )
+    
+                #save data set to database
+                t.save()
+                
+                #reset form and display thank-you-message
+                infomsg='Ticket erfolgreich erstellt!'
+                form=EnterTicketForm()    
+        else:
+            #initialize empty form
+            form = EnterTicketForm()
+        
+        #form: form to be displayed for ticket entering; thx: display thanks-message 
+        return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
 
 
 
@@ -221,12 +223,9 @@ def show_ticket_detail(request, ticketid):
                 return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
                                                                 'editform':editform,
                                                                 'hasImage':image})
-            #if user is denied to view ticket data, return HTTP 403 Forbidden
+            #if user doesn't have permission to view/change ticket data, display error page with according message
             else:
-                return HttpResponseForbidden()
-    #if the request method is anything other than GET, return HTTP 403 Forbidden
-    else:
-        return HttpResponseForbidden()
+                return render(request, 'ticket_error.djhtml', {'errormsg':'Sie haben keinen Zugriff auf das Ticket!'})
 
 
 
@@ -426,9 +425,6 @@ def close_ticket(request, ticketid):
                                       {'detailform':detailform, 
                                        'closeform':closeform,
                                        'hasImage':image})
-            #block other request forms with a HTTP 403 (Forbidden) Response
-            else:
-                return HttpResponseForbidden()
         
         #if user mustn't edit tickets or another user is specified as responsible_person
         else:
@@ -523,9 +519,6 @@ def search_tickets(request):
                                                             'fieldnames':fieldnames})
         else:
             return HttpResponse("Form not valid")
-    #send Http403 to non GET requests
-    else:
-        return HttpResponseForbidden()
 
 
 def show_ticket_image(request, ticketid):
