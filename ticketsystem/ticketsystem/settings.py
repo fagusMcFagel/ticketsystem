@@ -12,9 +12,13 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 
 import os
 
+# TESTING LDAP
+AUTHENTICATION_BACKENDS = ("django_python3_ldap.auth.LDAPBackend")
+LDAP_AUTH_URL = "srvrgdc01"
+LDAP_AUTH_SEARCH_BASE="OU=OU_PPS-User,OU=OU_GOEBEL,DC=goebel,DC=local"
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.11/howto/deployment/checklist/
