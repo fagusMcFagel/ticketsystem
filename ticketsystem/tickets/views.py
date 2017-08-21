@@ -12,38 +12,52 @@ from _functools import reduce
 from django.core.mail import send_mail, get_connection
 from ticketsystem import settings
 import imghdr
-from django.contrib.auth.models import User
 
+#local constants
+LOGIN_URL = '/tickets/login/'
+STDRT_REDIRECT_URL = '/tickets/overview/'
 
-
+#view function for user login
 """
-#view function for login
 #parameter: HttpRequest request
 #URL:'tickets/login'
 """
 def login_user(request):
-
+    
+    #renewal of session expiration
+    #request.session.set_expiry(settings.COOKIE_EXP_AGE)
+    
     #initialize variables error and login_user
     error = False
     logged_in_user = None
     infomsg=''
     
-    #when login form is submitted, validate fields 
-    #and logout currently logged in user if necessary
+    #if form is submitted in a post request
     if request.method=='POST':
         form = LoginForm(request.POST)
+        
+        #if POST data is valid in LoginForm
         if form.is_valid():
+            
+            #logout currently logged in user
             if request.user.is_authenticated():
                 logout(request)
+                
             #get user name and password from POST data and try to authenticate user
             username = request.POST['username']
             password = request.POST['password']
             user = authenticate(request, username=username, password=password)
             
-            #if user was authenticated, log the user in and redirect to overview
+            #if user is authenticated: login user
             if user is not None:
                 login(request, user)
-                return HttpResponseRedirect('/tickets/overview/')
+                
+                #if the login was redirected with parameter "next" (e.g. via @login_required decorator)
+                if request.GET.get('next'):
+                    return HttpResponseRedirect(request.GET.get('next'))
+                #default redirect to /tickets/overview/
+                else:
+                    return HttpResponseRedirect(DEF_REDIRECT_URL)
             #reset the form and set error to true
             else:
                 error=True
@@ -57,9 +71,7 @@ def login_user(request):
         #set empty login form
         form = LoginForm()
         
-        if request.GET.get('status') :
-            if request.GET['status']=='required':
-                infomsg='Login erforderlich!'
+        infomsg='Login erforderlich!'
 
     
     return render(request, 'ticket_login.djhtml', {'form':form,
@@ -69,89 +81,80 @@ def login_user(request):
 
 
 
-"""
 #view function for creating a new ticket
+"""
 #lets the user choose sector and category
 #and requires input for subject and description
 #parameter: HttpRequest request
 #URL:'tickets/enter'
-#NO LOGIN REQUIRED
 """
+@login_required(login_url=LOGIN_URL)
 def enter_ticket(request):
+    
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
+    
     #initialize thx with false -> don't display thank you message
     infomsg=''
-    if request.user().is_authenticated() or request.user.uid()==User.objects.filter(username=request.user.username).uid():
-        if request.method=="POST":
-            #set form as EnterTicketForm-Object with the POST-data
-            form = EnterTicketForm(request.POST, request.FILES)
     
-            #create an entry in the database with the entered data
-            if form.is_valid():                
-                #get cleaned data and current system time
-                cd = form.cleaned_data
-                now = timezone.now()
-                
-                #initialize img as empty string
-                img = ''
-                
-                #check if an image file was uploaded and if so set img to the file
-                if request.FILES:
-                    if imghdr.what(request.FILES['image']):
-                        img= request.FILES['image']
-                
-                
-                #initialize ticket object t with form data
-                #ticket id increments automatically
-                #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
-                t = Ticket(sector=cd['sector'], category=cd['category'],
-                           subject=cd['subject'], description=cd['description'],
-                           creationdatetime = now, status='open',
-                           creator=request.META['USERNAME'],
-                           responsible_person='',
-                           comment='', solution='',keywords='',
-                           image=img
-                )
+    if request.method=="POST":
+        #set form as EnterTicketForm-Object with the POST-data
+        form = EnterTicketForm(request.POST, request.FILES)
+
+        #create an entry in the database with the entered data
+        if form.is_valid():                
+            #get cleaned data and current system time
+            cd = form.cleaned_data
+            now = timezone.now()
+            
+            #initialize img as empty string
+            img = ''
+            
+            #check if an image file was uploaded and if so set img to the file
+            if request.FILES:
+                if imghdr.what(request.FILES['image']):
+                    img= request.FILES['image']
+            
+            
+            #initialize ticket object t with form data
+            #ticket id increments automatically
+            #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
+            t = Ticket(sector=cd['sector'], category=cd['category'],
+                       subject=cd['subject'], description=cd['description'],
+                       creationdatetime = now, status='open',
+                       creator=request.META['USERNAME'],
+                       responsible_person='',
+                       comment='', solution='',keywords='',
+                       image=img
+            )
+
+            #save data set to database
+            t.save()
+            
+            #reset form and display thank-you-message
+            infomsg='Ticket erfolgreich erstellt!'
+            form=EnterTicketForm()    
+    else:
+        #initialize empty form
+        form = EnterTicketForm()
     
-                #save data set to database
-                t.save()
-                
-                #reset form and display thank-you-message
-                infomsg='Ticket erfolgreich erstellt!'
-                form=EnterTicketForm()    
-        else:
-            #initialize empty form
-            form = EnterTicketForm()
-        
         #form: form to be displayed for ticket entering; thx: display thanks-message 
         return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
 
 
 
-### FILE UPLOAD HANDLED VIA MODEL; FUNCTION NOT NEEDED ###
-# """
-# # takes file and writes it to the directory specified in the project settings
-# # -> ticketsystem.ticketsystem.settings.UPLOAD_DIRECTORY
-# """
-# def handle_file_upload(file, imgname):
-#     if imghdr.what(file):
-#         if isinstance(file, File):
-#             dstdir = open(settings.UPLOAD_DIRECTORY+imgname+"."+imghdr.what(file), 'wb+')
-#             print(settings.UPLOAD_DIRECTORY+imgname)
-#             for chunk in file.chunks():
-#                 dstdir.write(chunk)
-#             dstdir.close()
-#             print("File written")
-
-
-"""
 #view function for displaying a user's tickets
+"""
 #displays a list of open tickets for all groups/sectors the user's in on the left (NO responsible_person specified)
 #and a list of open tickets for which he is entered as responsible_person
 #parameter: HttpRequest request
 #URL:'tickets/overview'
 """
-@login_required(login_url='/tickets/login/?status=required')
+@login_required(login_url=LOGIN_URL)
 def show_ticket_list(request):
+    
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
     
     #build list of all groups the user is part of
     groups = []
@@ -184,15 +187,19 @@ def show_ticket_list(request):
 
 
 
-"""
 #view function for viewing a ticket/'s data
+"""
 #submit options for: 
 #back to overview, change to editing, change to closing the ticket(redirect)
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/'
 """
-@login_required(login_url='/tickets/login/?status=required')
+@login_required(login_url=LOGIN_URL)
 def show_ticket_detail(request, ticketid):
+    
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
+    
     if request.method=="GET":
         #query for ticket with given id
         try:
@@ -229,8 +236,8 @@ def show_ticket_detail(request, ticketid):
 
 
 
-"""
 #view function for editing a ticket/'s data
+"""
 #lets the user enter data for status, comment, solution and keywords
 #submit options for: 
 #back to overview, takeover(declare yourself responsible),
@@ -238,8 +245,12 @@ def show_ticket_detail(request, ticketid):
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/edit'
 """
-@login_required(login_url='/tickets/login/?status=required')
+@login_required(login_url=LOGIN_URL)
 def edit_ticket_detail(request, ticketid):
+    
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
+    
     #query for ticket with given id, catch possible exceptions
     try:
         ticket = Ticket.objects.get(ticketid=str(ticketid))
@@ -344,8 +355,8 @@ def edit_ticket_detail(request, ticketid):
 
 
 
-"""
 #view function for closing a ticket
+"""
 #lets the user enter data for comment, solution and keywords
 #additional submit options for redirecting to the ticket overview and ticket editing 
 #submit option for closing the ticket -> validates the data and either
@@ -354,8 +365,12 @@ def edit_ticket_detail(request, ticketid):
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/close'
 """
-@login_required(login_url='/tickets/login/?status=required')
+@login_required(login_url=LOGIN_URL)
 def close_ticket(request, ticketid):
+    
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
+    
     #query for ticket with given id
     try:
         ticket = Ticket.objects.get(ticketid=str(ticketid))
@@ -441,9 +456,10 @@ def close_ticket(request, ticketid):
 
 
 """
-# separate funcion which sends a mail to ticket_dict['creator']
+# function which sends a mail to ticket_dict['creator']
 # informing the creator that the ticket with ID ticket_dict['ticketid'] has
 # been closed by user ticket_dict['responsible_person']
+# url: NONE (separated for convenience)
 """
 def sendTicketCloseMail(ticket_dict):
     subject = "Ihr Ticket #"+str(ticket_dict['ticketid'])+" wurde abgeschlossen"
@@ -459,15 +475,19 @@ def sendTicketCloseMail(ticket_dict):
 
 
 
-"""
 #view function for ticket search
+"""
 #searches for tickets which match user-entered criteria and
 #returns a template with all results shown
 #parameter: HttpRequest request
 #URL:'tickets/search'
 """
-@login_required(login_url='/tickets/login/?status=required')
+@login_required(login_url=LOGIN_URL)
 def search_tickets(request):
+   
+    #renewal of session expiration
+    #request.session.set_expiry(COOKIE_EXP_AGE)
+    
     if request.method=="GET":
         #initialize searchform with GET data
         searchform = SearchForm(request.GET)
@@ -521,21 +541,44 @@ def search_tickets(request):
             return HttpResponse("Form not valid")
 
 
+
+#view function for ticket image display in a specific template
+"""
+#displays the appended/uploaded file for the given ticketid
+#if no such ticket exists, the error template will be rendered and returned instead
+#parameters: HttpRequest request, ticketid
+#URL:'tickets/<ticketid>/image'
+"""
+@login_required(login_url=LOGIN_URL)
 def show_ticket_image(request, ticketid):
     try:
         ticket = Ticket.objects.get(ticketid=str(ticketid))
     except:
         return render(request, 'ticket_error.djhtml', {'errormsg':'Kein Ticket mit dieser ID!'})
     else:
-        return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid), 'url':ticket.image.url})
-    
-def get_ticket_image(request, ticketid, imgname):
+        if ticket.image:
+            return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid), 'url':ticket.image.url})
+        else:
+            return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid)})
+        
+
+
+#view function for displaying a specific image
+"""
+#the image to be displayed is fetched via MEDIA_ROOT
+#a HttpResponse with the image data and content_type is returned
+#if an exception is raised (by open()): render and return error template (w/ message)
+#parameters: HttpRequest request, imgname
+"""
+@login_required(login_url=LOGIN_URL)    
+def get_ticket_image(request, imgname):
     try:
         img = open(settings.MEDIA_ROOT+"uploads/"+imgname, "rb+")
         imgtype= imghdr.what(img)  
         return HttpResponse(img.read(), content_type="image/"+imgtype)
     except:
-        return render(request, 'ticket_error.djhtml', {'errormsg':'Fehler beim lesen des Screenshots!'})
+        errormsg = 'Fehler: Bild konnte nicht geöffnet werden'
+        return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})
 
 
 ########################################

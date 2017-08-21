@@ -34,6 +34,12 @@ SITE_ROOT = PROJECT_ROOT
 MEDIA_ROOT = os.path.join(SITE_ROOT, '/Users/Forner/git/ticketsystem/ticketsystem/tempfiles/')
 MEDIA_URL = '/'
 
+#LOGOUT USER ON BROWSER CLOSE
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+#SET EXPIRATION AGE IN SECONDS
+#COOKIE_EXP_AGE = 30*60
+
 # Application definition
 
 INSTALLED_APPS = [
