@@ -36,7 +36,7 @@
                 <table>
                     <tr>
                         <td class="buttoncell"><a href="{% url 'list_ticket' %}"><button class="btn" type="button">Zurück</button></a></td>       
-                        <td class="buttoncell"><a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Bearbeiten</button></a></td>
+                        <td class="buttoncell">{% if not closed %}<a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Bearbeiten</button></a>{% endif %}</td>
                         <td class="buttoncell"><a href="{% url 'close_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Abschließen</button></a></td>
                     </tr>
                 </table>

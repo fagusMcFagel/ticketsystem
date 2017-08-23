@@ -13,12 +13,11 @@
             <td class="overviewlist">
                 <table class="list" border="1" cellspacing="0" cellpadding="4px">
                     <tr class="heading">
-                        <td>TicketID</td>
-                        <td>Erstellt am</td>
-                        <td>Uhrzeit</td>
-                        <td>Bereich</td>
-                        <td>Kategorie</td>
-                        <td>Betreff</td>
+                        <td>{{ labels_dict.ticketid }}</td>
+                        <td colspan=2>{{ labels_dict.creationdatetime }}</td>
+                        <td>{{ labels_dict.sector }}</td>
+                        <td>{{ labels_dict.category }}</td>
+                        <td>{{ labels_dict.subject }}</td>
                     </tr>
                     {% if tickets_group %}
                     {% for ticket in tickets_group %}
@@ -41,12 +40,11 @@
             <td class="overviewlist">
                 <table class="list" border="1" cellspacing="0" cellpadding="4px">
                     <tr class="heading">
-                        <td>TicketID</td>
-                        <td>Erstellt am</td>
-                        <td>Uhrzeit</td>
-                        <td>Bereich</td>
-                        <td>Kategorie</td>
-                        <td>Betreff</td>
+                        <td>{{ labels_dict.ticketid }}</td>
+                        <td colspan=2>{{ labels_dict.creationdatetime }}</td>
+                        <td>{{ labels_dict.sector }}</td>
+                        <td>{{ labels_dict.category }}</td>
+                        <td>{{ labels_dict.subject }}</td>
                     </tr>
                     {% if tickets_user %}
                     {% for ticket in tickets_user %}

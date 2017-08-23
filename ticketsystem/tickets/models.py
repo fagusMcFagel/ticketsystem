@@ -15,7 +15,7 @@ class Ticket(models.Model):
     category = models.CharField(max_length=30, verbose_name="Art")
     subject = models.CharField(max_length=50, verbose_name="Betreff")
     description = models.CharField(max_length=400, verbose_name="Beschreibung")
-    creationdatetime = models.DateTimeField(verbose_name="Erstellungsdatum")
+    creationdatetime = models.DateTimeField(verbose_name="Erstell-Zeitpunkt")
     creator = models.CharField(max_length=40, verbose_name="Ersteller")
     
     responsible_person = models.CharField(max_length=40, blank=True, verbose_name="Verantwortlicher")

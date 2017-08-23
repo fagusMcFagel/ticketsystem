@@ -35,6 +35,13 @@ class EditableDataForm(forms.Form):
     solution = forms.CharField(widget=forms.Textarea,max_length=400, label="Lösung", required=False)
     keywords = forms.CharField(widget=forms.Textarea,max_length=100, label="Keywords", required=False)
 
+#form for display of ticket data entered by ticket processor;
+class ClosedDataForm(forms.Form):
+    status = forms.CharField(label="Status", required=False, disabled=True)
+    comment = forms.CharField(widget=forms.Textarea, max_length=100, label="Kommentar", required=False)
+    solution = forms.CharField(widget=forms.Textarea,max_length=400, label="Lösung", required=False)
+    keywords = forms.CharField(widget=forms.Textarea,max_length=100, label="Keywords", required=False)
+
 #form for ticket data especially relevant & partly required when closing ticket
 class ClosingDataForm(forms.Form):
     status = forms.ChoiceField(choices=[('closed','closed')],initial='closed', disabled=True, label="Status")

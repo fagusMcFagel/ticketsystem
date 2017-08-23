@@ -21,6 +21,11 @@
             {% endfor %}
             {% endif %}
             {% endfor %}
+			{% if fileErr %}
+			<tr>
+				<td colspan=2 class="errormsg">Nur Bild-Dateien erlaubt!</td>
+			</tr>
+			{% endif %}
             <tr>
                 {% csrf_token %}
                 <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Submit"></td>

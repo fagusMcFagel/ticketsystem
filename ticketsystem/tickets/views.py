@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from tickets.models import Ticket
 from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm,\
-    ClosingDataForm, SearchForm
+    ClosingDataForm, SearchForm, ClosedDataForm
 from django.shortcuts import render
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,7 @@ from _functools import reduce
 from django.core.mail import send_mail, get_connection
 from ticketsystem import settings
 import imghdr
+from django.http.response import HttpResponseBadRequest
 
 #local constants
 LOGIN_URL = '/tickets/login/'
@@ -107,25 +108,31 @@ def enter_ticket(request):
             cd = form.cleaned_data
             now = timezone.now()
             
-            #initialize img as empty string
+            #initialize img as empty string, fileErr as False
             img = ''
+            fileErr = False
             
             #check if an image file was uploaded and if so set img to the file
             if request.FILES:
                 if imghdr.what(request.FILES['image']):
                     img= request.FILES['image']
-            
+                #if a file was uploaded but is not recognized as an image file
+                else:
+                    #form: form to be displayed for ticket entering; infomsg: displayed infomsg
+                    infomsg="Dateifehler"
+                    fileErr = True
+                    return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg, 'fileErr':fileErr})
             
             #initialize ticket object t with form data
             #ticket id increments automatically
             #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
             t = Ticket(sector=cd['sector'], category=cd['category'],
-                       subject=cd['subject'], description=cd['description'],
-                       creationdatetime = now, status='open',
-                       creator=request.META['USERNAME'],
-                       responsible_person='',
-                       comment='', solution='',keywords='',
-                       image=img
+                subject=cd['subject'], description=cd['description'],
+                creationdatetime = now, status='open',
+                creator=request.META['USERNAME'],
+                responsible_person='',
+                comment='', solution='',keywords='',
+                image=img
             )
 
             #save data set to database
@@ -138,8 +145,8 @@ def enter_ticket(request):
         #initialize empty form
         form = EnterTicketForm()
     
-        #form: form to be displayed for ticket entering; thx: display thanks-message 
-        return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
+    #form: form to be displayed for ticket entering; infomsg: displayed infomsg
+    return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg})
 
 
 
@@ -167,6 +174,11 @@ def show_ticket_list(request):
     query_user = Q(status='open') & Q(responsible_person=request.user.username)
     tickets_user = Ticket.objects.filter(query_user)
     
+    #get column headings/names from Ticket model
+    labels_dict = {}
+    for f in Ticket._meta.get_fields():
+        labels_dict[f.name]=f.verbose_name
+    
     #the groups the user is part of
     query_group = Q(status='open') & Q(responsible_person='') & Q(sector__in=groups)
     tickets_group = Ticket.objects.filter(query_group)
@@ -183,6 +195,7 @@ def show_ticket_list(request):
     #return the template with the fetched data on display
     return render(request, 'ticket_overview.djhtml', {'tickets_group':tickets_group,
                                                       'tickets_user':tickets_user,
+                                                      'labels_dict':labels_dict,
                                                       'infomsg':infomsg})
 
 
@@ -218,21 +231,31 @@ def show_ticket_detail(request, ticketid):
         else:
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
+            if ticket_dict['status']=='closed':
+                closed=True
+            else:
+                closed=False
             
             #if user is ticket creator or has permissions to change tickets 
             if (request.META['USERNAME']==ticket_dict['creator'] 
                 or request.user.has_perm('tickets.change_ticket')
                 ):
                 detailform = DetailForm(initial=ticket_dict)
-                editform = EditableDataForm(initial=ticket_dict)
+                if closed:
+                    editform = ClosedDataForm(initial=ticket_dict)
+                else:
+                    editform = EditableDataForm(initial=ticket_dict)
                 image = ticket_dict['image']
         
                 return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
                                                                 'editform':editform,
-                                                                'hasImage':image})
+                                                                'hasImage':image,
+                                                                'closed':closed})
             #if user doesn't have permission to view/change ticket data, display error page with according message
             else:
                 return render(request, 'ticket_error.djhtml', {'errormsg':'Sie haben keinen Zugriff auf das Ticket!'})
+    else:
+        return HttpResponseBadRequest()
 
 
 
@@ -274,6 +297,10 @@ def edit_ticket_detail(request, ticketid):
             if request.method=="GET":
                 #convert ticket to dictionary with it's data
                 ticket_dict = model_to_dict(ticket)
+               
+                #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
+                if ticket_dict['status']=='closed':
+                    return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']))
         
                 detailform = DetailForm(initial=ticket_dict)
                 editform = EditableDataForm(initial=ticket_dict)
