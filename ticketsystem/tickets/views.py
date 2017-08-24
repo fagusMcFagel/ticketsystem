@@ -279,7 +279,8 @@ def edit_ticket_detail(request, ticketid):
     #query for ticket with given id, catch possible exceptions
     try:
         ticket = Ticket.objects.get(ticketid=str(ticketid))
-        #catch possible exceptions
+        print("Trying")    
+    #catch possible exceptions
     except Exception as e:
         if isinstance(e, Ticket.DoesNotExist):
             return render(request, 'ticket_error.djhtml', 
@@ -291,11 +292,12 @@ def edit_ticket_detail(request, ticketid):
             return render(request, 'ticket_error.djhtml', 
                       {'errormsg':"An unknown error occured"})
     else:                
-        
+        print("Success")
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if request.user.has_perm('tickets.change_ticket') and \
             ticket.responsible_person in ['', request.user.username]:
             
+            print("Permissions accepted")
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
             
@@ -308,10 +310,13 @@ def edit_ticket_detail(request, ticketid):
         
                 detailform = DetailForm(initial=ticket_dict)
                 editform = EditableDataForm(initial=ticket_dict)
-                image = ticket_dict['image']
+                if ticket_dict['image']==None:
+                    hasImage = False
+                else:
+                    hasImage = True
                 return render(request, 'ticket_edit.djhtml',
                               {'detailform':detailform,'editform':editform,
-                               'hasImage':image})
+                               'hasImage':hasImage})
             
             #POST request, form was submitted, data will be validated and database updated (if input correct)
             elif request.method=="POST":
@@ -387,6 +392,7 @@ def edit_ticket_detail(request, ticketid):
                 errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
             else:
                 errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
+            print(errormsg)
             return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
 
 

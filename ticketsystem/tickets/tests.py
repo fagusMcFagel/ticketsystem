@@ -40,10 +40,11 @@ class TicketTest(TestCase):
     #test ticket creation with File upload;
     def testEnterTicket_File(self):
         TicketTest.login(self) 
+        FILE_DIR = 'C:/GitRepos/ticketsystem/ticketsystem/testFiles'
         
         #INCORRECT upload -> not an Image File (here *.txt)
         start_count = Ticket.objects.all().count()
-        with open('C:/Users/Forner/git/ticketsystem/testFiles/testTxt.txt', "rb") as errFO:
+        with open(FILE_DIR+'/testTxt.txt', "rb") as errFO:
             self.assertFalse(errFO==None)
             enter_Response = self.client.post("/tickets/enter/", {'sector':self.TEST_DICT['sector'], 'category':self.TEST_DICT['category'], 'subject':self.TEST_DICT['subject'], 'description':self.TEST_DICT['description'], 'image':errFO}, USERNAME = 'Mustermann')
 
@@ -55,7 +56,7 @@ class TicketTest(TestCase):
         #CORRECT upload -> Image File (here *.bmp)
         #a ticket should be created with the image in the corresponding db field
         start_count = Ticket.objects.all().count()
-        with open('C:/Users/Forner/git/ticketsystem/testFiles/testBMP.bmp', "rb") as imgFO:
+        with open(FILE_DIR+'/testBMP.bmp', "rb") as imgFO:
             self.assertFalse(imgFO==None)
             enter_Response = self.client.post("/tickets/enter/", {'sector':self.TEST_DICT['sector'], 'category':self.TEST_DICT['category'], 'subject':self.TEST_DICT['subject'], 'description':self.TEST_DICT['description'], 'image':imgFO}, USERNAME = 'Mustermann')
         
@@ -83,30 +84,43 @@ class TicketTest(TestCase):
     
     #expects ticketid to have a string representation
     def editingTestTicket(self, ticketid):
-        EDIT_DICT= {'status':'Offen', 'comment':'Testing stuff', 'solution':'I tested stuff and fixed it', 'keywords':''}
+        REPLACE_DICT= {'status':{'open':'Offen'}, 'comment':'Testing stuff', 'solution':'', 'keywords':''}
         TicketTest.login(self)
         
-        tickets = Ticket.objects.filter(ticketid=str(ticketid))
-        
+                
         #check if exactly one ticket is in the db for the given ticket id
+        tickets = Ticket.objects.filter(ticketid=str(ticketid))
         self.assertTrue(tickets.count()==1)
         
-        #get ticket object from queryset
-        ticket = tickets[0]
-
-        
-        editResponse = self.client.post("/tickets/"+str(ticket_dict['ticketid'])+"/edit", {'submit':'confirm', 'status':EDIT_DICT['status'], 'comment':EDIT_DICT['comment'], 'solution':'', 'keywords':''})
-        
-        ticket = Ticket.objects.get(ticketid=str(ticketid))
+        ticket=tickets[0]        
         ticket_dict = model_to_dict(ticket)
-        self.assertTrue(ticket_dict['status']==EDIT_DICT['status'])
-        self.assertTrue(ticket_dict['comment']==EDIT_DICT['comment'])
-        self.assertFalse(ticket_dict['solution']==EDIT_DICT['solution'])
+        DATA_DICT = ticket_dict
+        
+        for key in REPLACE_DICT.keys():
+            if key=='status':
+                DATA_DICT[key]=REPLACE_DICT[key]['open']
+            else:
+                DATA_DICT[key]=REPLACE_DICT[key]
+                
+        DATA_DICT['submit']='confirm'
+        DATA_DICT['image']=None
+                        
+        editResponse = self.client.post("/tickets/"+str(ticketid)+"/edit/", DATA_DICT)
+
+        tickets = Ticket.objects.filter(ticketid=str(ticketid))
+        ticket = tickets[0]
+        ticket_dict = model_to_dict(ticket)
+        
+        self.assertTrue(ticket_dict['status'] in REPLACE_DICT['status'].keys())
+        print(ticket_dict['comment']+"; "+REPLACE_DICT['comment'])
+        self.assertTrue(ticket_dict['comment']==REPLACE_DICT['comment'])
+        self.assertFalse(ticket_dict['solution']==REPLACE_DICT['solution'])
         
     def login(self):
         if User.objects.filter(username='ppssystem').count()==0:
             #create user for pps system
             testuser = User.objects.create_user('ppssystem', 'test@mail.de', 'preuuzalsor')
+            #TODO: PERMISSIONS
             testuser.save()        
             
         #login via post to url /tickets/login/
