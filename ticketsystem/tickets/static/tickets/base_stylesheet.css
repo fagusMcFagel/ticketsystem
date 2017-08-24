@@ -75,12 +75,12 @@ li.nvgtbtn {
 }
 
 li.infomsg {
-    float:right;
-    margin-right:90px;
+    float:left;
+    margin-left:10px;
+    color: hsl(45, 80%, 60%);
     padding: 8px;
-    color: lightgrey;
     background-color: rgb(0,68,107);
-    border-right: 1px solid #ffffff;
+    border-right: 0px;
     border-left: 0px;
     font-weight: 800;
     height: 50px;

@@ -26,7 +26,3 @@ class Ticket(models.Model):
     workinghours = models.FloatField(default=0.0, verbose_name="Bearbeitungszeit")
     
     image = models.FileField(null=True, blank=True, upload_to='uploads/')
-    
-
-    
-    

@@ -12,7 +12,7 @@ from _functools import reduce
 from django.core.mail import send_mail, get_connection
 from ticketsystem import settings
 import imghdr
-from django.http.response import HttpResponseBadRequest
+from django.http.response import HttpResponseNotAllowed
 
 #local constants
 LOGIN_URL = '/tickets/login/'
@@ -48,7 +48,7 @@ def login_user(request):
             username = request.POST['username']
             password = request.POST['password']
             user = authenticate(request, username=username, password=password)
-            
+
             #if user is authenticated: login user
             if user is not None:
                 login(request, user)
@@ -58,7 +58,7 @@ def login_user(request):
                     return HttpResponseRedirect(request.GET.get('next'))
                 #default redirect to /tickets/overview/
                 else:
-                    return HttpResponseRedirect(DEF_REDIRECT_URL)
+                    return HttpResponseRedirect(STDRT_REDIRECT_URL)
             #reset the form and set error to true
             else:
                 error=True
@@ -95,7 +95,7 @@ def enter_ticket(request):
     #renewal of session expiration
     #request.session.set_expiry(COOKIE_EXP_AGE)
     
-    #initialize thx with false -> don't display thank you message
+    #init infomsg as empty string
     infomsg=''
     
     if request.method=="POST":
@@ -103,7 +103,8 @@ def enter_ticket(request):
         form = EnterTicketForm(request.POST, request.FILES)
 
         #create an entry in the database with the entered data
-        if form.is_valid():                
+        if form.is_valid():    
+            
             #get cleaned data and current system time
             cd = form.cleaned_data
             now = timezone.now()
@@ -122,13 +123,13 @@ def enter_ticket(request):
                     infomsg="Dateifehler"
                     fileErr = True
                     return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg, 'fileErr':fileErr})
-            
             #initialize ticket object t with form data
             #ticket id increments automatically
             #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
             t = Ticket(sector=cd['sector'], category=cd['category'],
                 subject=cd['subject'], description=cd['description'],
                 creationdatetime = now, status='open',
+                # TODO:get username from form/request-data?
                 creator=request.META['USERNAME'],
                 responsible_person='',
                 comment='', solution='',keywords='',
@@ -141,7 +142,7 @@ def enter_ticket(request):
             #reset form and display thank-you-message
             infomsg='Ticket erfolgreich erstellt!'
             form=EnterTicketForm()    
-    else:
+    else:   
         #initialize empty form
         form = EnterTicketForm()
     
@@ -255,7 +256,8 @@ def show_ticket_detail(request, ticketid):
             else:
                 return render(request, 'ticket_error.djhtml', {'errormsg':'Sie haben keinen Zugriff auf das Ticket!'})
     else:
-        return HttpResponseBadRequest()
+        #send response for 405: Method not allowed
+        return HttpResponseNotAllowed()
 
 
 
@@ -289,18 +291,20 @@ def edit_ticket_detail(request, ticketid):
             return render(request, 'ticket_error.djhtml', 
                       {'errormsg':"An unknown error occured"})
     else:                
+        
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if request.user.has_perm('tickets.change_ticket') and \
             ticket.responsible_person in ['', request.user.username]:
             
+            #convert ticket to dictionary with it's data
+            ticket_dict = model_to_dict(ticket)
+            
+            #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
+            if ticket_dict['status']=='closed':
+                return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']+'/'))
+            
             #GET request, display of input fields (with current data)
             if request.method=="GET":
-                #convert ticket to dictionary with it's data
-                ticket_dict = model_to_dict(ticket)
-               
-                #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
-                if ticket_dict['status']=='closed':
-                    return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']))
         
                 detailform = DetailForm(initial=ticket_dict)
                 editform = EditableDataForm(initial=ticket_dict)
@@ -315,11 +319,11 @@ def edit_ticket_detail(request, ticketid):
                 
                 #when editing is canceled (button "Übersicht" clicked) -> redirect
                 if "cancel" in request.POST:
-                    return HttpResponseRedirect("/tickets/overview")
+                    return HttpResponseRedirect("/tickets/overview/")
                 
                 #redirect to closing for when button "Abschließen" is clicked
                 elif "close" in request.POST:
-                    return HttpResponseRedirect("/tickets/"+ticketid+"/close")
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/close/")
                 
                 #change responsible person to currently logged in user
                 elif "takeover" in request.POST:     
@@ -328,8 +332,10 @@ def edit_ticket_detail(request, ticketid):
                         infomsg='Ticket übernommen'
                     elif ticket.responsible_person!=request.user.username:
                         infomsg='Ticketübernahme nicht möglich'
-                        
+                    
+                    #'refresh' ticket-object after updating in db
                     ticket=Ticket.objects.get(ticketid=str(ticketid))
+                    
                     #convert ticket to dictionary with it's data
                     ticket_dict = model_to_dict(ticket)
         
@@ -367,7 +373,10 @@ def edit_ticket_detail(request, ticketid):
                     return render(request, 'ticket_edit.djhtml',
                                   {'detailform':detailform,'editform':editform,
                                    'infomsg':infomsg, 'hasImage':image})
-        
+            
+                else:
+                    #send response for 405: Method not allowed
+                    return HttpResponseNotAllowed()
         #if user mustn't edit tickets or another user is specified as responsible_person
         else:
             #display error template with error description
@@ -415,12 +424,18 @@ def close_ticket(request, ticketid):
         #if user is allowed to edit tickets and no other user is specified as responsible
         if request.user.has_perm('tickets.change_ticket') and \
             ticket.responsible_person in ['', request.user.username]:
+
+            #convert ticket to dictionary with it's data
+            ticket_dict = model_to_dict(ticket)
+            
+            #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
+            if ticket_dict['status']=='closed':
+                return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']+'/'))
             
             #GET request display ticket_close template for user input
             if request.method=="GET":
                     
                 #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
-                ticket_dict = model_to_dict(ticket)
                 ticket_dict['status']='Abgeschlossen'
 
                 detailform = DetailForm(initial=ticket_dict)
@@ -434,10 +449,10 @@ def close_ticket(request, ticketid):
             elif request.method=="POST":
                 #if button for overview is clicked -> redirect
                 if "cancel" in request.POST:
-                    return HttpResponseRedirect("/tickets/overview")
+                    return HttpResponseRedirect("/tickets/overview/")
                 #if button for editing is clicked -> redirect to editing form
                 elif "edit" in request.POST:
-                    return HttpResponseRedirect("/tickets/"+ticketid+"/edit")
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/edit/")
                 #if button for closing the ticket is clicked -> check input, update db
                 elif "close" in request.POST:
                     #init form object with POST data
@@ -449,6 +464,7 @@ def close_ticket(request, ticketid):
                                                                         solution = closeform.cleaned_data['solution'],
                                                                         keywords = closeform.cleaned_data['keywords'],
                                                                         closingdatetime = timezone.now(),
+                                                                        workinghours = closeform.cleaned_data['workinghours'],
                                                                         status = "closed",
                                                                         responsible_person=request.user.username)
                         
@@ -467,7 +483,9 @@ def close_ticket(request, ticketid):
                                       {'detailform':detailform, 
                                        'closeform':closeform,
                                        'hasImage':image})
-        
+            else:
+                #send response for 405: Method not allowed
+                return HttpResponseNotAllowed()
         #if user mustn't edit tickets or another user is specified as responsible_person
         else:
             #display error template with error description
@@ -566,7 +584,9 @@ def search_tickets(request):
                                                             'fieldnames':fieldnames})
         else:
             return HttpResponse("Form not valid")
-
+    else:
+        #send response for 405: Method not allowed
+        return HttpResponseNotAllowed()
 
 
 #view function for ticket image display in a specific template
