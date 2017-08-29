@@ -7,6 +7,7 @@
     <table>
         <tr>
             <td class="tableheading">GRUPPENTICKETS</td>
+            <td width="30px"></td>
             <td class="tableheading">ÜBERNOMMENE TICKETS</td>
         </tr>
         <tr>
@@ -21,7 +22,7 @@
                     </tr>
                     {% if tickets_group %}
                     {% for ticket in tickets_group %}
-                    <tr>
+                    <tr id="{{ ticket.priority }}">
                         <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
                         <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
                         <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
@@ -37,6 +38,7 @@
                     {% endif %}
                 </table>
             </td>
+            <td width="30px"></td>
             <td class="overviewlist">
                 <table class="list" border="1" cellspacing="0" cellpadding="4px">
                     <tr class="heading">
@@ -48,7 +50,7 @@
                     </tr>
                     {% if tickets_user %}
                     {% for ticket in tickets_user %}
-                    <tr class="tablecont">
+                    <tr class="tablecont" id="{{ ticket.priority }}">
                         <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
                         <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
                         <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>

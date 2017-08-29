@@ -363,8 +363,9 @@ def edit_ticket_detail(request, ticketid):
                         Ticket.objects.filter(ticketid=str(ticketid)).update(
                                                                     status=cd['status'],
                                                                     comment=cd['comment'],
-                                                                    solution = cd['solution'],
-                                                                    keywords =cd['keywords']
+                                                                    solution=cd['solution'],
+                                                                    keywords=cd['keywords'],
+                                                                    priority=cd['priority']
                                                                     )
                         infomsg='Änderungen gespeichert!'
                     else:
@@ -467,6 +468,7 @@ def close_ticket(request, ticketid):
                                                                         keywords = closeform.cleaned_data['keywords'],
                                                                         closingdatetime = timezone.now(),
                                                                         workinghours = closeform.cleaned_data['workinghours'],
+                                                                        priority=cd['priority'],
                                                                         status = "closed",
                                                                         responsible_person=request.user.username)
                         

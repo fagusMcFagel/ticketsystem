@@ -31,11 +31,12 @@ class DetailForm(forms.Form):
 #form for display of ticket data changeable by the ticket processors
 class EditableDataForm(forms.Form):
     status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES, label="Status", required=False)
+    priority = forms.ChoiceField(choices = Ticket.PRIORITY_CHOICES, label="Priorität", required=False)
     comment = forms.CharField(widget=forms.Textarea, max_length=100, label="Kommentar", required=False)
     solution = forms.CharField(widget=forms.Textarea,max_length=400, label="Lösung", required=False)
     keywords = forms.CharField(widget=forms.Textarea,max_length=100, label="Keywords", required=False)
 
-#form for display of ticket data entered by ticket processor;
+#form for display of closed ticket's data entered by ticket processor;
 class ClosedDataForm(forms.Form):
     status = forms.CharField(label="Status", required=False, disabled=True)
     comment = forms.CharField(widget=forms.Textarea, max_length=100, label="Kommentar", required=False)
