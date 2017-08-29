@@ -19,10 +19,10 @@ LOGIN_URL = '/tickets/login/'
 STDRT_REDIRECT_URL = '/tickets/overview/'
 
 #view function for user login
-"""
+'''
 #parameter: HttpRequest request
 #URL:'tickets/login'
-"""
+'''
 def login_user(request):
     
     #renewal of session expiration
@@ -83,12 +83,12 @@ def login_user(request):
 
 
 #view function for creating a new ticket
-"""
+'''
 #lets the user choose sector and category
 #and requires input for subject and description
 #parameter: HttpRequest request
 #URL:'tickets/enter'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def enter_ticket(request):
     
@@ -152,12 +152,12 @@ def enter_ticket(request):
 
 
 #view function for displaying a user's tickets
-"""
+'''
 #displays a list of open tickets for all groups/sectors the user's in on the left (NO responsible_person specified)
 #and a list of open tickets for which he is entered as responsible_person
 #parameter: HttpRequest request
 #URL:'tickets/overview'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def show_ticket_list(request):
     
@@ -168,7 +168,6 @@ def show_ticket_list(request):
     groups = []
     for group in request.user.groups.all():
         groups.append(group.name)
-
 
     #search for open tickets to be displayed according to the
     #the requesting user
@@ -185,7 +184,7 @@ def show_ticket_list(request):
     tickets_group = Ticket.objects.filter(query_group)
     
     
-    #initialise infomsg
+    #initialize infomsg
     infomsg=''
     
     if request.GET.get('status') :
@@ -202,12 +201,12 @@ def show_ticket_list(request):
 
 
 #view function for viewing a ticket/'s data
-"""
+'''
 #submit options for: 
 #back to overview, change to editing, change to closing the ticket(redirect)
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def show_ticket_detail(request, ticketid):
     
@@ -262,14 +261,14 @@ def show_ticket_detail(request, ticketid):
 
 
 #view function for editing a ticket/'s data
-"""
+'''
 #lets the user enter data for status, comment, solution and keywords
 #submit options for: 
 #back to overview, takeover(declare yourself responsible),
 #save the currently entered data, closing the ticket(redirect)
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/edit'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def edit_ticket_detail(request, ticketid):
     
@@ -278,8 +277,7 @@ def edit_ticket_detail(request, ticketid):
     
     #query for ticket with given id, catch possible exceptions
     try:
-        ticket = Ticket.objects.get(ticketid=str(ticketid))
-        print("Trying")    
+        ticket = Ticket.objects.get(ticketid=str(ticketid)) 
     #catch possible exceptions
     except Exception as e:
         if isinstance(e, Ticket.DoesNotExist):
@@ -292,12 +290,10 @@ def edit_ticket_detail(request, ticketid):
             return render(request, 'ticket_error.djhtml', 
                       {'errormsg':"An unknown error occured"})
     else:                
-        print("Success")
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if request.user.has_perm('tickets.change_ticket') and \
             ticket.responsible_person in ['', request.user.username]:
             
-            print("Permissions accepted")
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
             
@@ -321,7 +317,7 @@ def edit_ticket_detail(request, ticketid):
             #POST request, form was submitted, data will be validated and database updated (if input correct)
             elif request.method=="POST":
                 infomsg=''
-                
+
                 #when editing is canceled (button "Übersicht" clicked) -> redirect
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/overview/")
@@ -355,6 +351,7 @@ def edit_ticket_detail(request, ticketid):
                 
                 #check input data and update database when button "Speichern" is clicked
                 elif "confirm" in request.POST:
+
                     #init form with POST data
                     editform = EditableDataForm(request.POST)
                     detailform = DetailForm(initial=model_to_dict(ticket))
@@ -392,13 +389,12 @@ def edit_ticket_detail(request, ticketid):
                 errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
             else:
                 errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
-            print(errormsg)
             return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
 
 
 
 #view function for closing a ticket
-"""
+'''
 #lets the user enter data for comment, solution and keywords
 #additional submit options for redirecting to the ticket overview and ticket editing 
 #submit option for closing the ticket -> validates the data and either
@@ -406,7 +402,7 @@ def edit_ticket_detail(request, ticketid):
 #or displays errors in the closing forms fields 
 #parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/<ticketid>/close'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def close_ticket(request, ticketid):
     
@@ -506,12 +502,12 @@ def close_ticket(request, ticketid):
 
 
 
-"""
+'''
 # function which sends a mail to ticket_dict['creator']
 # informing the creator that the ticket with ID ticket_dict['ticketid'] has
 # been closed by user ticket_dict['responsible_person']
 # url: NONE (separated for convenience)
-"""
+'''
 def sendTicketCloseMail(ticket_dict):
     subject = "Ihr Ticket #"+str(ticket_dict['ticketid'])+" wurde abgeschlossen"
     
@@ -527,12 +523,12 @@ def sendTicketCloseMail(ticket_dict):
 
 
 #view function for ticket search
-"""
+'''
 #searches for tickets which match user-entered criteria and
 #returns a template with all results shown
 #parameter: HttpRequest request
 #URL:'tickets/search'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def search_tickets(request):
    
@@ -555,7 +551,7 @@ def search_tickets(request):
                 if searchterms[key]!='' and searchterms[key] is not None:
                     
                     #####
-                    # TODO: full text will only work with MySQL (or postgreSQL); 
+                    # TODO: full text will only work with MySQL (or postgreSQL);
                     # full text indices must be configured directly in db manager
                     #####
                     
@@ -596,12 +592,12 @@ def search_tickets(request):
 
 
 #view function for ticket image display in a specific template
-"""
+'''
 #displays the appended/uploaded file for the given ticketid
 #if no such ticket exists, the error template will be rendered and returned instead
 #parameters: HttpRequest request, ticketid
 #URL:'tickets/<ticketid>/image'
-"""
+'''
 @login_required(login_url=LOGIN_URL)
 def show_ticket_image(request, ticketid):
     try:
@@ -617,12 +613,12 @@ def show_ticket_image(request, ticketid):
 
 
 #view function for displaying a specific image
-"""
+'''
 #the image to be displayed is fetched via MEDIA_ROOT
 #a HttpResponse with the image data and content_type is returned
 #if an exception is raised (by open()): render and return error template (w/ message)
 #parameters: HttpRequest request, imgname
-"""
+'''
 @login_required(login_url=LOGIN_URL)    
 def get_ticket_image(request, imgname):
     try:
