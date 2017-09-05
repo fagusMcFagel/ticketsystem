@@ -468,7 +468,7 @@ def close_ticket(request, ticketid):
                                                                         keywords = closeform.cleaned_data['keywords'],
                                                                         closingdatetime = timezone.now(),
                                                                         workinghours = closeform.cleaned_data['workinghours'],
-                                                                        priority=cd['priority'],
+                                                                        priority= 'low',
                                                                         status = "closed",
                                                                         responsible_person=request.user.username)
                         
