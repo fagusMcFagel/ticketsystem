@@ -28,7 +28,7 @@
 			{% endif %}
             <tr>
                 {% csrf_token %}
-                <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Submit"></td>
+                <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Erstellen"></td>
             </tr>
         </table>
     </form>

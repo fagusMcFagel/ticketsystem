@@ -14,7 +14,7 @@
         <table>
             {{ form.as_table }}
         <tr>
-            <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Submit"></td>
+            <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Einloggen"></td>
         </tr>
         </table>
         {% csrf_token %}

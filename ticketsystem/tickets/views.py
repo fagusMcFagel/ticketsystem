@@ -5,6 +5,7 @@ from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataFo
 from django.shortcuts import render
 from django.db.models import Q
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
 from django.utils import timezone
@@ -123,6 +124,9 @@ def enter_ticket(request):
                     infomsg="Dateifehler"
                     fileErr = True
                     return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg, 'fileErr':fileErr})
+            
+            cd['sector']=Group.objects.get(name=cd['sector'])
+            
             #initialize ticket object t with form data
             #ticket id increments automatically
             #fields (apart from closingdatetime) mustn't be NULL -> initalized with '' (empty String)
@@ -131,7 +135,7 @@ def enter_ticket(request):
                 creationdatetime = now, status='open',
                 # TODO:get username from form/request-data?
                 creator=request.META['USERNAME'],
-                responsible_person='',
+                responsible_person=None,
                 comment='', solution='',keywords='',
                 image=img
             )
@@ -167,11 +171,11 @@ def show_ticket_list(request):
     #build list of all groups the user is part of
     groups = []
     for group in request.user.groups.all():
-        groups.append(group.name)
+        groups.append(group)
 
     #search for open tickets to be displayed according to the
     #the requesting user
-    query_user = Q(status='open') & Q(responsible_person=request.user.username)
+    query_user = Q(status='open') & Q(responsible_person=request.user)
     tickets_user = Ticket.objects.filter(query_user)
     
     #get column headings/names from Ticket model
@@ -180,7 +184,7 @@ def show_ticket_list(request):
         labels_dict[f.name]=f.verbose_name
     
     #the groups the user is part of
-    query_group = Q(status='open') & Q(responsible_person='') & Q(sector__in=groups)
+    query_group = Q(status='open') & Q(responsible_person=None) & Q(sector__in=groups)
     tickets_group = Ticket.objects.filter(query_group)
     
     
@@ -292,7 +296,7 @@ def edit_ticket_detail(request, ticketid):
     else:                
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if request.user.has_perm('tickets.change_ticket') and \
-            ticket.responsible_person in ['', request.user.username]:
+            ticket.responsible_person in [None, request.user]:
             
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
@@ -328,10 +332,10 @@ def edit_ticket_detail(request, ticketid):
                 
                 #change responsible person to currently logged in user
                 elif "takeover" in request.POST:     
-                    if ticket.responsible_person=='':
-                        Ticket.objects.filter(ticketid=str(ticketid)).update(responsible_person=request.user.username)
+                    if ticket.responsible_person==None:
+                        Ticket.objects.filter(ticketid=str(ticketid)).update(responsible_person=request.user)
                         infomsg='Ticket übernommen'
-                    elif ticket.responsible_person!=request.user.username:
+                    elif ticket.responsible_person!=request.user:
                         infomsg='Ticketübernahme nicht möglich'
                     
                     #'refresh' ticket-object after updating in db
@@ -385,8 +389,8 @@ def edit_ticket_detail(request, ticketid):
             #display error template with error description
             if not request.user.has_perm('tickets.change_ticket'):
                 errormsg = 'Sie haben nicht die Berechtigung Tickets zu bearbeiten!'
-            elif ticket.responsible_person!='' and \
-                ticket.responsible_person!=request.user.username:
+            elif ticket.responsible_person!=None and \
+                ticket.responsible_person!=request.user:
                 errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
             else:
                 errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
@@ -426,7 +430,7 @@ def close_ticket(request, ticketid):
 
         #if user is allowed to edit tickets and no other user is specified as responsible
         if request.user.has_perm('tickets.change_ticket') and \
-            ticket.responsible_person in ['', request.user.username]:
+            ticket.responsible_person in [None, request.user]:
 
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
@@ -470,9 +474,11 @@ def close_ticket(request, ticketid):
                                                                         workinghours = closeform.cleaned_data['workinghours'],
                                                                         priority= 'low',
                                                                         status = "closed",
-                                                                        responsible_person=request.user.username)
-                        
-                        sendTicketCloseMail(model_to_dict(ticket))
+                                                                        responsible_person = request.user)
+                        ticket =  Ticket.objects.get(ticketid=str(ticketid))
+                        ticket_dict = model_to_dict(ticket)
+                        ticket_dict['responsible_person'] = request.user.username
+                        sendTicketCloseMail(ticket_dict)
 
                         return HttpResponseRedirect('/tickets/overview/?status=closed')
                         
@@ -495,8 +501,8 @@ def close_ticket(request, ticketid):
             #display error template with error description
             if not request.user.has_perm('tickets.change_ticket'):
                 errormsg = 'Sie haben nicht die Berechtigung Tickets zu bearbeiten!'
-            elif ticket.responsible_person!='' and \
-                ticket.responsible_person!=request.user.username:
+            elif ticket.responsible_person!= None and \
+                ticket.responsible_person!=request.user:
                 errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
             else:
                 errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
@@ -514,7 +520,7 @@ def sendTicketCloseMail(ticket_dict):
     subject = "Ihr Ticket #"+str(ticket_dict['ticketid'])+" wurde abgeschlossen"
     
     message = "Das von Ihnen erstellte Ticket mit der ID "+str(ticket_dict['ticketid'])+\
-            " wurde vom Benutzer "+ticket_dict['responsible_person']+" abgeschlossen!"
+            " wurde vom Benutzer "+ ticket_dict['responsible_person'] +" abgeschlossen!"
     
     receiver = [ticket_dict['creator']+"@rgoebel.de"]
     

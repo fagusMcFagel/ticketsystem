@@ -1,18 +1,19 @@
 from django.db import models
+from django.contrib.auth.models import User, Group
 
 # Create your models here.
 class Ticket(models.Model):   
     #constants for choices in form(and template) fields and
-    SECTOR_CHOICES = [('Saperion', 'Saperion'), ('Allgemein','Allgemein')]
+    SECTOR_CHOICES = [(Group.objects.get(name='Saperion'), 'Saperion'),]
     CATEGORY_CHOICES = [('Problem','Problem'), ('Vorschlag','Vorschlag')]
     STATUS_CHOICES = [('open','Offen'),('delayed','Verzögert'),('processing','In Bearbeitung')]
-    PRIORITY_CHOICES = [('low','niedrig'), ('moderate','normal'), ('high','hoch')]
+    PRIORITY_CHOICES = [('',''), ('low','niedrig'), ('moderate','normal'), ('high','hoch')]
     
     #primary key
     ticketid = models.AutoField(primary_key=True, verbose_name="TicketID")
     
     #data input by user at ticket creation
-    sector = models.CharField(max_length=30, verbose_name="Bereich")
+    sector = models.ForeignKey(Group, max_length=50, verbose_name="Bereich")
     category = models.CharField(max_length=30, verbose_name="Art")
     subject = models.CharField(max_length=50, verbose_name="Betreff")
     description = models.CharField(max_length=400, verbose_name="Beschreibung")
@@ -23,7 +24,7 @@ class Ticket(models.Model):
     comment = models.CharField(max_length=100, verbose_name="Kommentar")
     solution = models.CharField(max_length=400, verbose_name="Lösung")
     keywords = models.CharField(max_length=100, verbose_name="Keywords") 
-    responsible_person = models.CharField(max_length=40, blank=True, verbose_name="Verantwortlicher")    
+    responsible_person = models.ForeignKey(User, max_length=50, verbose_name="Verantwortliche/r", null=True)   
     workinghours = models.FloatField(default=0.0, verbose_name="Bearbeitungszeit")
     
     #data which is filled at ticket creation/closing

@@ -1,6 +1,6 @@
 from django.test import TestCase
 from django.forms.models import model_to_dict
-from django.contrib.auth.models import Permission, User, UserManager
+from django.contrib.auth.models import Permission, User, UserManager, Group
 from .models import Ticket
 from django.test.client import Client
 import datetime
@@ -10,8 +10,12 @@ from django.core.files.base import File
 from django.utils import timezone
 
 class TicketTest(TestCase):
-    TEST_DICT = {'sector':'Saperion', 'category':'Problem', 'subject':'Test Ticket', 'description':'This ticket was created for testing'}
+    TEST_DICT = {'sector':Group.objects.get(name='Saperion'), 'category':'Problem', 'subject':'Test Ticket', 'description':'This ticket was created for testing'}
     
+    def setUp(self):
+        #create group for "Saperion"
+        testgroup = Group.objects.create(id=1, name='Saperion', permissions='')
+        testgroup.save()
     
     #test for ticket creation without file upload
     def testEnterTicket_noFile(self):
@@ -33,7 +37,7 @@ class TicketTest(TestCase):
         self.assertTrue(pytz.utc.localize(datetime.datetime.utcnow())-ticket_dict['creationdatetime']<=datetime.timedelta(seconds=1))
         
         #check if the values of the ticket are the same as for creation
-        self.assertTrue(ticket_dict['sector']==self.TEST_DICT['sector'])
+        self.assertTrue(ticket_dict['sector']==self.TEST_DICT['sector'].id)
         self.assertTrue(ticket_dict['category']==self.TEST_DICT['category'])
         self.assertTrue(ticket_dict['subject']==self.TEST_DICT['subject'])
         self.assertTrue(ticket_dict['description']==self.TEST_DICT['description'])
@@ -75,7 +79,7 @@ class TicketTest(TestCase):
         self.assertTrue(pytz.utc.localize(datetime.datetime.utcnow())-ticket_dict['creationdatetime']<=datetime.timedelta(seconds=1))
         
         #check if the values of the ticket are the same as for creation
-        self.assertTrue(ticket_dict['sector']==self.TEST_DICT['sector'])
+        self.assertTrue(ticket_dict['sector']==self.TEST_DICT['sector'].id)
         self.assertTrue(ticket_dict['category']==self.TEST_DICT['category'])
         self.assertTrue(ticket_dict['subject']==self.TEST_DICT['subject'])
         self.assertTrue(ticket_dict['description']==self.TEST_DICT['description'])
@@ -90,13 +94,13 @@ class TicketTest(TestCase):
         REPLACE_DICT= {'status': 'open', 'comment':'Testing stuff', 'solution':'This is a test solution', 'keywords':''}
         
         #init ticket data for test ticket and create test ticket in db
-        ticket_data = {'sector':'Saperion', 'category': 'Problem', 'subject':'Editing Tickets', 'description':'Test for editing tickets'}
+        ticket_data = {'sector':Group.objects.get(name__contains='Saperion'), 'category': 'Problem', 'subject':'Editing Tickets', 'description':'Test for editing tickets'}
         now = timezone.now()
         t = Ticket(sector=ticket_data['sector'], category=ticket_data['category'],
                 subject=ticket_data['subject'], description=ticket_data['description'],
                 creationdatetime = now, status='open',
                 creator='ppssystem',
-                responsible_person='',
+                responsible_person=None,
                 comment='', solution='',keywords='',
                 image=''
             )
@@ -135,13 +139,13 @@ class TicketTest(TestCase):
     def testCloseTicket(self):
                 
         #init ticket data for test ticket and create test ticket in db
-        ticket_data = {'sector':'Saperion', 'category': 'Problem', 'subject':'Closing Tickets', 'description':'Test for editing tickets'}
+        ticket_data = {'sector': Group.objects.get(name__contains='Saperion'), 'category': 'Problem', 'subject':'Closing Tickets', 'description':'Test for editing tickets'}
         now = timezone.now()
         t = Ticket(sector=ticket_data['sector'], category=ticket_data['category'],
                 subject=ticket_data['subject'], description=ticket_data['description'],
                 creationdatetime = now, status='open',
                 creator='ppssystem',
-                responsible_person='',
+                responsible_person=None,
                 comment='', solution='',keywords='', 
                 image=''
             )
@@ -214,6 +218,7 @@ class TicketTest(TestCase):
             permissions = [Permission.objects.get(codename='add_ticket'), Permission.objects.get(codename='change_ticket'), Permission.objects.get(codename='delete_ticket')]
             testuser.user_permissions.add(permissions[0], permissions[1], permissions[2])
             testuser.save()
+
             
         #login via post to url /tickets/login/
         response=self.client.post("/tickets/login/", {'username':'ppssystem', 'password':'preuuzalsor'})
