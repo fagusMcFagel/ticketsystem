@@ -14,7 +14,7 @@ class TicketTest(TestCase):
     
     def setUp(self):
         #create group for "Saperion"
-        testgroup = Group.objects.create(id=1, name='Saperion', permissions='')
+        testgroup = Group.objects.create(name='Saperion')
         testgroup.save()
     
     #test for ticket creation without file upload
