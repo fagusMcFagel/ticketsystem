@@ -1,9 +1,9 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from tickets.models import Ticket
+from tickets.models import Ticket, SolvingMeasures
 from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm,\
-    ClosingDataForm, SearchForm, ClosedDataForm
+    ClosingDataForm, SearchForm, ClosedDataForm, CompactMeasureForm, MeasureForm
 from django.shortcuts import render
-from django.db.models import Q
+from django.db.models import ForeignKey, Q
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
@@ -76,11 +76,23 @@ def login_user(request):
         infomsg='Login erforderlich!'
 
     
-    return render(request, 'ticket_login.djhtml', {'form':form,
-                                                   'error':error,
-                                                   'login_user':logged_in_user,
-                                                   'infomsg':infomsg})
+    return render(request, 'ticket_login.djhtml', 
+                  {'form':form,
+                   'error':error,
+                   'login_user':logged_in_user,
+                   'infomsg':infomsg
+                   })
 
+#view function for logging a user out and redirecting to the login page
+'''
+#parameter: HttpRequest request
+#URL:'tickets/logout'
+'''
+def logout_user(request):
+    if request.user.is_authenticated():
+        logout(request)
+    
+    return HttpResponseRedirect("/tickets/login/")
 
 
 #view function for creating a new ticket
@@ -123,7 +135,11 @@ def enter_ticket(request):
                     #form: form to be displayed for ticket entering; infomsg: displayed infomsg
                     infomsg="Dateifehler"
                     fileErr = True
-                    return render(request, 'ticket_enter.djhtml', {'form':form, 'infomsg':infomsg, 'fileErr':fileErr})
+                    return render(request, 'ticket_enter.djhtml', 
+                                  {'form':form,
+                                   'infomsg':infomsg, 
+                                   'fileErr':fileErr
+                                   })
             
             cd['sector']=Group.objects.get(name=cd['sector'])
             
@@ -136,7 +152,7 @@ def enter_ticket(request):
                 # TODO:get username from form/request-data?
                 creator=request.META['USERNAME'],
                 responsible_person=None,
-                comment='', solution='',keywords='',
+                comment='',keywords='',
                 image=img
             )
 
@@ -179,9 +195,7 @@ def show_ticket_list(request):
     tickets_user = Ticket.objects.filter(query_user)
     
     #get column headings/names from Ticket model
-    labels_dict = {}
-    for f in Ticket._meta.get_fields():
-        labels_dict[f.name]=f.verbose_name
+    labels_dict = Ticket.TICKET_LABELS
     
     #the groups the user is part of
     query_group = Q(status='open') & Q(responsible_person=None) & Q(sector__in=groups)
@@ -197,10 +211,12 @@ def show_ticket_list(request):
     
     
     #return the template with the fetched data on display
-    return render(request, 'ticket_overview.djhtml', {'tickets_group':tickets_group,
-                                                      'tickets_user':tickets_user,
-                                                      'labels_dict':labels_dict,
-                                                      'infomsg':infomsg})
+    return render(request, 'ticket_overview.djhtml', 
+                  {'tickets_group':tickets_group,
+                   'tickets_user':tickets_user,
+                   'labels_dict':labels_dict,
+                   'infomsg':infomsg
+                   })
 
 
 
@@ -235,26 +251,60 @@ def show_ticket_detail(request, ticketid):
         else:
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
-            if ticket_dict['status']=='closed':
-                closed=True
-            else:
-                closed=False
+            #set sector to String represantation in ticket_dict
+            ticket_dict['sector']=ticket.sector
+            
+            
+            #build list of all groups the user is part of
+            groups = []
+            for group in request.user.groups.all():
+                groups.append(group)
             
             #if user is ticket creator or has permissions to change tickets 
-            if (request.META['USERNAME']==ticket_dict['creator'] 
-                or request.user.has_perm('tickets.change_ticket')
+            if (ticket.sector in groups and 
+                (request.META['USERNAME']==ticket_dict['creator'] 
+                or request.user.has_perm('tickets.change_ticket'))
                 ):
+                #store if the ticket is already closed
+                if ticket_dict['status']=='closed':
+                    closed=True
+                else:
+                    closed=False
+                
                 detailform = DetailForm(initial=ticket_dict)
                 if closed:
                     editform = ClosedDataForm(initial=ticket_dict)
                 else:
                     editform = EditableDataForm(initial=ticket_dict)
                 image = ticket_dict['image']
-        
-                return render(request, 'ticket_detail.djhtml', {'detailform':detailform,
-                                                                'editform':editform,
-                                                                'hasImage':image,
-                                                                'closed':closed})
+                
+                #headers for the measures table
+                headers = []
+                for key in CompactMeasureForm.FIELD_LABELS:
+                    headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                
+                #all measures linked to the currently displayed ticket
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                measures = []
+                for measure in ticket_measures:
+                    measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
+            
+                infomsg=''
+                if request.GET.get('status') :
+                    if request.GET['status']=='added':
+                        infomsg="Maßnahme hinzugefügt!"
+                        
+                return render(request, 'ticket_detail.djhtml', 
+                              {
+                               'infomsg':infomsg,
+                               'detailform':detailform,                                                                                        
+                               'editform':editform,
+                               'hasImage':image,   
+                               'headers':headers,
+                               'measures':measures,    
+                               'closed':closed
+                               })
+                
             #if user doesn't have permission to view/change ticket data, display error page with according message
             else:
                 return render(request, 'ticket_error.djhtml', {'errormsg':'Sie haben keinen Zugriff auf das Ticket!'})
@@ -266,7 +316,7 @@ def show_ticket_detail(request, ticketid):
 
 #view function for editing a ticket/'s data
 '''
-#lets the user enter data for status, comment, solution and keywords
+#lets the user enter data for status, comment and keywords
 #submit options for: 
 #back to overview, takeover(declare yourself responsible),
 #save the currently entered data, closing the ticket(redirect)
@@ -293,13 +343,21 @@ def edit_ticket_detail(request, ticketid):
         else:
             return render(request, 'ticket_error.djhtml', 
                       {'errormsg':"An unknown error occured"})
-    else:                
+    else:
+        #build list of all groups the user is part of
+        groups = []
+        for group in request.user.groups.all():
+            groups.append(group)
+
         #if user has permissions to change tickets and no other user is responsible for the ticket
-        if request.user.has_perm('tickets.change_ticket') and \
-            ticket.responsible_person in [None, request.user]:
+        if (ticket.sector in groups and 
+            request.user.has_perm('tickets.change_ticket') and 
+            ticket.responsible_person in [None, request.user]):
             
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
+            #set sector to String represantation in ticket_dict
+            ticket_dict['sector']=ticket.sector
             
             #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
             if ticket_dict['status']=='closed':
@@ -307,16 +365,31 @@ def edit_ticket_detail(request, ticketid):
             
             #GET request, display of input fields (with current data)
             if request.method=="GET":
-        
+                
                 detailform = DetailForm(initial=ticket_dict)
+                
+                #headers for the measures table
+                headers = []
+                for key in CompactMeasureForm.FIELD_LABELS:
+                    headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                measures = []
+                for measure in ticket_measures:
+                    measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
+                    
                 editform = EditableDataForm(initial=ticket_dict)
                 if ticket_dict['image']==None:
                     hasImage = False
                 else:
                     hasImage = True
                 return render(request, 'ticket_edit.djhtml',
-                              {'detailform':detailform,'editform':editform,
-                               'hasImage':hasImage})
+                              {'detailform':detailform,
+                               'editform':editform,
+                               'hasImage':hasImage,
+                               'headers':headers,
+                               'measures':measures
+                               })
             
             #POST request, form was submitted, data will be validated and database updated (if input correct)
             elif request.method=="POST":
@@ -326,6 +399,10 @@ def edit_ticket_detail(request, ticketid):
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/overview/")
                 
+                #when button "New Measure..." was clicked -> redirect
+                elif "addmeasure" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/add_measure/")
+                    
                 #redirect to closing for when button "Abschließen" is clicked
                 elif "close" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticketid+"/close/")
@@ -343,22 +420,46 @@ def edit_ticket_detail(request, ticketid):
                     
                     #convert ticket to dictionary with it's data
                     ticket_dict = model_to_dict(ticket)
+                    ticket_dict['sector'] = ticket.sector
         
                     detailform = DetailForm(initial=ticket_dict)
                     editform = EditableDataForm(initial=ticket_dict)
                     image = ticket_dict['image']
                     
-                    return render(request, 'ticket_edit.djhtml', {'editform':editform, 
-                                                                  'detailform':detailform, 
-                                                                  'infomsg':infomsg,
-                                                                  'hasImage':image})
+                    headers = []
+                    for key in CompactMeasureForm.FIELD_LABELS:
+                        headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                    
+                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    measures = []
+                    for measure in ticket_measures:
+                        measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
+                    
+                    
+                    
+                    return render(request, 'ticket_edit.djhtml',
+                                  {
+                                   'infomsg':infomsg,
+                                   'editform':editform, 
+                                   'detailform':detailform, 
+                                   'hasImage':image,
+                                   'headers': headers,
+                                   'measures': measures
+                                   })
                 
                 #check input data and update database when button "Speichern" is clicked
                 elif "confirm" in request.POST:
 
                     #init form with POST data
                     editform = EditableDataForm(request.POST)
-                    detailform = DetailForm(initial=model_to_dict(ticket))
+                    ticket_dict=model_to_dict(ticket)
+                    ticket_dict['sector']=ticket.sector
+                    detailform = DetailForm(initial=ticket_dict)
+                    
+                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    measures = []
+                    for measure in ticket_measures:
+                        measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
                     #check user input for validity
                     if editform.is_valid():
@@ -367,7 +468,6 @@ def edit_ticket_detail(request, ticketid):
                         Ticket.objects.filter(ticketid=str(ticketid)).update(
                                                                     status=cd['status'],
                                                                     comment=cd['comment'],
-                                                                    solution=cd['solution'],
                                                                     keywords=cd['keywords'],
                                                                     priority=cd['priority']
                                                                     )
@@ -376,10 +476,19 @@ def edit_ticket_detail(request, ticketid):
                         infomsg='Fehlerhafte Eingabe(n)'
                 
                     image = ticket_dict['image']
-
+                    
+                    headers = []
+                    for key in CompactMeasureForm.FIELD_LABELS:
+                        headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                    
                     return render(request, 'ticket_edit.djhtml',
-                                  {'detailform':detailform,'editform':editform,
-                                   'infomsg':infomsg, 'hasImage':image})
+                                  {'infomsg':infomsg, 
+                                   'detailform':detailform,
+                                   'editform':editform,
+                                   'hasImage':image,
+                                   'headers':headers, 
+                                   'measures':measures
+                                   })
             
                 else:
                     #send response for 405: Method not allowed
@@ -398,9 +507,168 @@ def edit_ticket_detail(request, ticketid):
 
 
 
+#view function for adding a measure to a given ticket
+'''
+#lets the user enter data for short and full description and the measures result
+#additionaly user has to choose the category of the solution (unsuccesful, partly, temporary, solution)
+#submit option for adding the measure-> validates the data and either
+#creates the measure in the database and returns to ticket details
+#or displays errors in the forms fields 
+#parameter: HttpRequest request, ticketid (\d{1,4} -> 4 digits from urls.py)
+#URL:'tickets/<ticketid>/add_measure'
+'''
+@login_required(login_url=LOGIN_URL)
+def add_measure(request, ticketid):
+    #query for ticket with given id
+    try:
+        ticket = Ticket.objects.get(ticketid=str(ticketid))
+    #catch possible exceptions
+    except Exception as e:
+        if isinstance(e, Ticket.DoesNotExist):
+            return render(request, "ticket_error.djhtml", {'errormsg':'No measure found!'})
+        elif isinstance(e, Ticket.MultipleObjectsReturned):
+            return render(request, "ticket_error.djhtml", {'errormsg':'Multiple measures found under unique ID!'})
+        else:
+            return render(request, "ticket_error.djhtml", {'errormsg':'Unknown error in views.add_measure'})
+    #if correct ticket was found
+    else:
+        #build list of all groups the user is part of
+        groups = []
+        for group in request.user.groups.all():
+            groups.append(group)
+
+        #if user has permissions to change tickets and no other user is responsible for the ticket
+        if (ticket.sector in groups and
+            request.user.has_perm('tickets.change_ticket') and 
+            ticket.responsible_person in [None, request.user]):
+            
+            #GET request display ticket_close template for user input
+            if request.method=="GET":
+                return render(request, 'measure_add.djhtml',
+                              {'measureform': MeasureForm(initial={'ticketid':ticket.ticketid})})
+            elif request.method=="POST":
+                if "add" in request.POST:
+                    #add ticketid through mutable copy of request.POST here since only for displaying purpose in the form
+                    POST = request.POST.copy()
+                    POST['ticketid']=ticket.ticketid
+                    measureform=MeasureForm(POST)
+                    
+                    if measureform.is_valid():
+                        measure_cd = measureform.cleaned_data
+                        SolvingMeasures.objects.create(ticket=ticket, creationdatetime=timezone.now(), shortdsc=measure_cd['shortdsc'], 
+                                                       dsc=measure_cd['dsc'], result=measure_cd['result'], isSolution=measure_cd['isSolution'])
+                        
+                        return HttpResponseRedirect('/tickets/'+str(ticket.ticketid)+'/?status=added')
+                    else:
+                        return render(request, 'measure_add.djhtml', 
+                                      {'measureform': measureform, 'infomsg':"Eingaben fehlerhaft"})
+                elif "cancel" in request.POST:
+                     return HttpResponseRedirect('/tickets/'+str(ticket.ticketid)+'/')      
+            else:
+                return HttpResponseNotAllowed()
+        #if user mustn't edit measures or another user is specified as responsible_person
+        else:
+            #display error template with error description
+            if not request.user.has_perm('tickets.change_ticket'):
+                errormsg = 'Sie haben nicht die Berechtigung Tickets zu bearbeiten (Maßnahmen hinzuzufügen)!'
+            elif ticket.responsible_person!=None and \
+                ticket.responsible_person!=request.user:
+                errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
+            else:
+                errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in views.add_measure)'
+            return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
+
+
+
+#view function for adding a measure to a given ticket
+'''
+#lets the user enter data for short and full description and the measures result
+#additionaly user has to choose the category of the solution (unsuccesful, partly, temporary, solution)
+#submit option for adding the measure-> validates the data and either
+#creates the measure in the database and returns to ticket details
+#or displays errors in the forms fields 
+#parameter: HttpRequest request, measureid (\d{1,4} -> 4 digits from urls.py)
+#URL:'tickets/measures/<measureid>'
+'''
+@login_required(login_url=LOGIN_URL)
+def edit_measure(request, measureid):
+    #query for measure with given id
+    try:
+        measure = SolvingMeasures.objects.get(measureid=str(measureid))
+    #catch possible exceptions
+    except Exception as e:
+        if isinstance(e, SolvingMeasures.DoesNotExist):
+            return render(request, "ticket_error.djhtml", {'errormsg':'No measure found!'})
+        elif isinstance(e, SolvingMeasures.MultipleObjectsReturned):
+            return render(request, "ticket_error.djhtml", {'errormsg':'Multiple measures found under unique ID!'})
+        else:
+            return render(request, "ticket_error.djhtml", {'errormsg':'Unknown error in views.edit_measure!'})
+    #if correct measure was found
+    else:
+        ticket = Ticket.objects.get(ticketid=measure.ticket.ticketid)
+        #build list of all groups the user is part of
+        groups = []
+        for group in request.user.groups.all():
+            groups.append(group)
+
+        #if user has permissions to change tickets and no other user is responsible for the ticket
+        if (ticket.sector in groups and
+            request.user.has_perm('tickets.change_solvingmeasures') and 
+            ticket.responsible_person in [None, request.user]):
+            
+            if request.method=="GET":
+                measure_dict = model_to_dict(measure)
+                measure_dict['ticketid']=ticket.ticketid
+                
+                measureform = MeasureForm(initial=measure_dict)
+                
+                return render(request, 'measure_edit.djhtml', {'measureform':measureform})
+            elif request.method=="POST":
+                if "cancel" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticket.ticketid+"/")
+                elif "confirm" in request.POST:
+                    
+                    #add ticketid here since only for displaying purpose in the form
+                    POST = request.POST.copy()
+                    POST['ticketid']=measure.ticket.ticketid
+                    measureform = MeasureForm(POST)
+                    
+                    if measureform.is_valid():
+                        measureform_cd = measureform.cleaned_data
+                        SolvingMeasures.objects.filter(measureid=str(measure.measureid)).update(shortdsc=measureform_cd['shortdsc'],
+                                                                                                dsc=measureform_cd['dsc'],
+                                                                                                result=measureform_cd['result'],
+                                                                                                isSolution=measureform_cd['isSolution'])
+                        #'refresh' measure object and init a new MeasureForm with the new data
+                        measure = SolvingMeasures.objects.get(measureid=str(measure.measureid))
+                        measure_dict = model_to_dict(measure)
+                        measure_dict['ticketid']= measure.ticket.ticketid
+                        measureform = MeasureForm(initial=measure_dict)
+                        
+                        infomsg = "Änderungen gespeichert!"
+                    else:
+                        infomsg = "Fehlerhafte Eingaben!"
+                        
+                    return render(request, 'measure_edit.djhtml', {'measureform':measureform, 'infomsg':infomsg})
+            else:
+                return HttpResponseNotAllowed()
+        #if user mustn't edit measures or another user is specified as responsible_person
+        else:
+            #display error template with error description
+            if not request.user.has_perm('tickets.change_solvingmeasures'):
+                errormsg = 'Sie haben nicht die Berechtigung Maßnahmen zu bearbeiten!'
+            elif ticket.responsible_person!=None and \
+                ticket.responsible_person!=request.user:
+                errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
+            else:
+                errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
+            return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
+                
+            
+
 #view function for closing a ticket
 '''
-#lets the user enter data for comment, solution and keywords
+#lets the user enter data for comment and keywords
 #additional submit options for redirecting to the ticket overview and ticket editing 
 #submit option for closing the ticket -> validates the data and either
 #updates the database and returns to the overview with a message
@@ -420,20 +688,28 @@ def close_ticket(request, ticketid):
     #catch possible exceptions
     except Exception as e:
         if isinstance(e, Ticket.DoesNotExist):
-            return HttpResponse("No Ticket")
+            return render(request, "ticket_error.djhtml", {'errormsg':'No Ticket found!'})
         elif isinstance(e, Ticket.MultipleObjectsReturned):
-            return HttpResponse("Too many Tickets")
+            return render(request, "ticket_error.djhtml", {'errormsg':'Multiple tickets found for unique ID!'})
         else:
-            return HttpResponse("Unknown error")
+            return render(request, "ticket_error.djhtml", {'errormsg':'Unknown error in views.close_ticket!'})
     #if correct ticket was found
     else:                
 
-        #if user is allowed to edit tickets and no other user is specified as responsible
-        if request.user.has_perm('tickets.change_ticket') and \
-            ticket.responsible_person in [None, request.user]:
+         #build list of all groups the user is part of
+        groups = []
+        for group in request.user.groups.all():
+            groups.append(group)
+
+        #if user has permissions to change tickets and no other user is responsible for the ticket
+        if (ticket.sector in groups and
+            request.user.has_perm('tickets.change_ticket') and 
+            ticket.responsible_person in [None, request.user]):
 
             #convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
+            #set sector to String represantation in ticket_dict
+            ticket_dict['sector']=ticket.sector
             
             #if ticket is closed redirect to detail view; prevents navigation to edit template via entering url
             if ticket_dict['status']=='closed':
@@ -444,14 +720,28 @@ def close_ticket(request, ticketid):
                     
                 #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
                 ticket_dict['status']='Abgeschlossen'
-
+                
+                ticket_dict['sector']=ticket.sector
+                
+                headers = []
+                for key in CompactMeasureForm.FIELD_LABELS:
+                    headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                measures = []
+                for measure in ticket_measures:
+                    measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
+                
                 detailform = DetailForm(initial=ticket_dict)
                 closeform = ClosingDataForm(initial=ticket_dict)
                 image = ticket_dict['image']
-                return render(request, 'ticket_close.djhtml', {'detailform':detailform,
-                                                               'closeform':closeform,
-                                                               'hasImage':image
-                                                                })
+                return render(request, 'ticket_close.djhtml', 
+                              {'detailform':detailform,
+                               'closeform':closeform,
+                               'hasImage':image,
+                               'headers':headers,
+                               'measures': measures,
+                              })
             #POST request check form data for validity and update database if form is correct
             elif request.method=="POST":
                 #if button for overview is clicked -> redirect
@@ -468,7 +758,6 @@ def close_ticket(request, ticketid):
                     #if the data is valid, update ticket in database with entered data
                     if closeform.is_valid():                    
                         Ticket.objects.filter(ticketid=str(ticketid)).update(comment=closeform.cleaned_data['comment'],
-                                                                        solution = closeform.cleaned_data['solution'],
                                                                         keywords = closeform.cleaned_data['keywords'],
                                                                         closingdatetime = timezone.now(),
                                                                         workinghours = closeform.cleaned_data['workinghours'],
@@ -487,12 +776,21 @@ def close_ticket(request, ticketid):
                     #if data is invalid, display the current template with an additional error messages
                     else:
                         ticket_dict = model_to_dict(ticket)
+                        ticket_dict['sector'] = ticket.sector
                         detailform = DetailForm(initial=ticket_dict)
                         image = ticket_dict['image']
+                        
+                        headers = []
+                        for key in CompactMeasureForm.FIELD_LABELS:
+                            headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                            
                         return render(request, 'ticket_close.djhtml',
-                                      {'detailform':detailform, 
+                                      {'detailform':detailform,
                                        'closeform':closeform,
-                                       'hasImage':image})
+                                       'hasImage':image,
+                                       'measures':measures,
+                                       'headers':headers
+                                       })
             else:
                 #send response for 405: Method not allowed
                 return HttpResponseNotAllowed()
@@ -564,7 +862,7 @@ def search_tickets(request):
                     #####
                     
                     #append '__search' -> full text search for these fields
-                    if key=='description' or key=='solution' or key=='comment':
+                    if key=='description' or key=='comment':
                         key = key+'__search'
                     #append '__contains' -> in SQL "LIKE '%...%'" for non-choice-fields
                     elif key!='sector' and key!='category' and key!='status':
@@ -578,22 +876,34 @@ def search_tickets(request):
             query = reduce(lambda q,key: q&Q(**{key: query_dict[key]}), query_dict, Q())             
             tickets = Ticket.objects.filter(query)
             
-            #store field names of model in fieldnames[] 
-            fieldnames=[]
-            for field in Ticket._meta.get_fields(): #@UndefinedVariable (needed for error suppression)
-                fieldnames.append(field.verbose_name)
+            #init label_dict from Ticket.TICKET_LABELS
+            labels_dict=Ticket.TICKET_LABELS
             
             #generate list from query results
             results=[]
             for ticket in tickets:
-                results.append(model_to_dict(ticket))
+                ticket_dict = model_to_dict(ticket)
+                #replace the value for 'sector' with the corresponding groups name (instead of primary key in/from group table)
+                ticket_dict['sector']=ticket.sector.name
+                for key,value in ticket_dict.items():
+                    if value is None:
+                        ticket_dict[key]=""
+                
+                if ticket_dict['image']!='':
+                    ticket_dict['image']='Ja'
+                else:
+                    ticket_dict['image']='Nein'
+                
+                results.append(ticket_dict)
             
             #return ticket search template with searchform and result list
-            return render(request, 'ticket_search.djhtml', {'searchform':searchform,
-                                                            'results':results, 
-                                                            'fieldnames':fieldnames})
+            return render(request, 'ticket_search.djhtml',
+                          {'searchform':searchform,
+                           'results':results, 
+                           'labels_dict':labels_dict
+                          })
         else:
-            return HttpResponse("Form not valid")
+            return render(request, "ticket_error.djhtml", {'errormsg':'Searchform input invalid!'})
     else:
         #send response for 405: Method not allowed
         return HttpResponseNotAllowed()
@@ -614,9 +924,12 @@ def show_ticket_image(request, ticketid):
         return render(request, 'ticket_error.djhtml', {'errormsg':'Kein Ticket mit dieser ID!'})
     else:
         if ticket.image:
-            return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid), 'url':ticket.image.url})
+            return render(request, 'ticket_image.djhtml', 
+                          {'ticketid':str(ticketid), 
+                           'url':ticket.image.url})
         else:
-            return render(request, 'ticket_image.djhtml', {'ticketid':str(ticketid)})
+            return render(request, 'ticket_image.djhtml', 
+                          {'ticketid':str(ticketid)})
         
 
 

@@ -1,6 +1,7 @@
 {% extends "base.djhtml" %}
 {% block title %} RG - Login {% endblock %}
 
+{% block userlogin %}{% endblock %}
 {% block pagecontent %}
     {% if login_user %}
         <p style="color:blue;">Sie sind als {{ login_user.username }} eingeloggt</p>

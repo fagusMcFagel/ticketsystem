@@ -4,22 +4,22 @@
 {% block pagecontent %}
     <table>
         <tr>
-            <td>
+            <td style="border:2px solid black">
                 <table>
                     {% for field in editform %}
                     <tr>
-                        <td class="heading">{{ field.label_tag}}</td>
-                        <td class="tablecont" disabled>{{ field }}</td>
+                        <td class="heading">{{field.label_tag}}</td>
+                        <td class="tablecont" disabled>{{field}}</td>
                     </tr>
                     {% endfor %}
                 </table>
             </td>
-            <td>
+            <td style="vertical-align:top; border:2px solid black">
                 <table>
                     {% for field in detailform %}
                     <tr>
                         <td class="heading">{{field.label_tag}}</td>
-                        <td class="tablecont">{{ field }}</td>
+                        <td class="tablecont">{{field}}</td>
                     </tr>        
                     {% endfor %}
                     
@@ -31,12 +31,36 @@
                     {% endif %}
                 </table>
             </td>
+        </tr>
+        <tr>
+        	<td colspan=2, style="vertical-align:top; border:2px solid black">
+            	<table>
+            		<tr>
+            			{% for header in headers %}
+            			<td class="heading">{{header}}</td>
+            			{% endfor %}
+            		</tr>
+            		{% for measure in measures %}
+            		<tr>
+            			{% for field in measure %}
+            			{% if field.label == "UID" %}
+            			<td class="idlink"><a href="/tickets/measures/{{field.value}}/">{{ field.value }}</a></td>
+            			{% else %}
+	               		<td class="tablecont" disabled>{{field}}</td>
+	               		{% endif %}
+            			{% endfor %}
+	       			</tr>
+	           		{% endfor %}
+	           	</table>
+            </td>
+        </tr>
         <tr>
             <td colspan=2>
                 <table>
                     <tr>
                         <td class="buttoncell"><a href="{% url 'list_ticket' %}"><button class="btn" type="button">Zurück</button></a></td>       
-                        <td class="buttoncell">{% if not closed %}<a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Bearbeiten</button></a>{% endif %}</td>
+                        <td class="buttoncell">{% if not closed %}<a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Daten bearbeiten</button></a>{% endif %}</td>
+                        <td class="buttoncell">{% if not closed %}<a href="{% url 'add_measure' detailform.ticketid.value %}"><button class="btn" type="button">Neue Maßnahme...</button></a>{% endif %}</td>
                         <td class="buttoncell">{% if not closed %}<a href="{% url 'close_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Abschließen</button></a>{% endif %}</td>
                     </tr>
                 </table>

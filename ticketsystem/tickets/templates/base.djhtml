@@ -12,6 +12,8 @@
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/enter/">Eingabe</a></li>
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/overview/">Übersicht</a></li>
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/search/">Suche</a></li>
+            {% block userlogin %}<li class="nvgtbtn"><a class="nvgtlink" href="/tickets/logout/">Logout</a></li>{% endblock %}
+            </li>
             <li class="infomsg">{% block infomsg %}{% endblock %}</li>
         </ul>
         {% load static %}

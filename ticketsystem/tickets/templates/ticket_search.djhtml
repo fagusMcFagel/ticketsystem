@@ -17,26 +17,24 @@
     </form>
     
     <table class="list" border="1" cellspacing="0" cellpadding="4px">
-    <tr>
-    {% for name in fieldnames %}
-        <td style="font-weight:bold;">{{ name }}</td>
-    {% endfor %}
-    </tr>
-    
-    {% for ticket in results %}
-        <tr>
-            {% for key, value in ticket.items %}
-                {% if key == "ticketid" %}
-                <td class="tablecont" align="center">
-                <a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ value }}</a>
-                </td>
-                {% else %}
-                <td class="tablecont">
-                {{ value }}
-                </td>
-                {% endif %}   
-            {% endfor %}
+	    <tr>
+	    {% for key, value in labels_dict.items %}
+	        <td style="font-weight:bold;">{{ value }}</td>
+	    {% endfor %}
+	    </tr>
+	    
+	    {% for ticket in results %}
+	    <tr>
+	    	{% for key,value in ticket.items %}
+	        {% if key == "ticketid" %}
+	        <td class="tablecont" align="center">
+	        <a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ value }}</a>
+	        </td>
+	        {% else %}
+	        <td class="tablecont">{{ value }}</td>
+	        {% endif %}   
+	        {% endfor %}
         </tr>
-    {% endfor %}
+    	{% endfor %}
     </table>   
 {% endblock %}

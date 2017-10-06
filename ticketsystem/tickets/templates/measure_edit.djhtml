@@ -1,0 +1,31 @@
+{% extends "base.djhtml" %}
+{% block title %} RG - Maßnahme bearbeiten {% endblock %}
+
+{% block infomsg %}{{ infomsg }}{% endblock %}
+
+{% block pagecontent %}
+	<form action="" method="post" novalidate>
+    <table>
+    	{% for field in measureform %}
+    	<tr>
+    		<td class="heading">{{field.label_tag}}</td>
+    		{% if field.label == "TicketID" %}
+    		<td class="tablecont" disabled>{{field}}</td>
+    		{% else %}
+    		<td class="tablecont">{{field}}</td>
+    		{% endif %}
+    		{% if field.errors %}
+    		{% for err in field.errors %}
+    		<td> {{err}}</td>
+    		{% endfor %}
+    		{% endif %}
+    	</tr>
+    	{% endfor %}
+    	<tr>
+	    	{% csrf_token s%}
+    		<td class="buttoncell"><input class="btn" type="submit" name="confirm" value="Speichern"></td>
+    		<td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></td>
+    	</tr>
+    </table>
+    </form>
+{% endblock %}
