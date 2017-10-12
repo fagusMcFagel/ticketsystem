@@ -29,11 +29,16 @@ body {
 
 .buttoncell {
     text-align: center;
-    padding-top: 10px;
+    padding-top: 15px;
     width: 200px;
     height: 20px;
 }
 
+.detailheader {
+    font-family: "Calibri";
+    font-size: 16pt;s
+    font-weight: bold;
+}
 .heading {
     font-size: 14pt;
     font-weight: bold;

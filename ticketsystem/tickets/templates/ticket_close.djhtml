@@ -7,8 +7,24 @@
     <form action="" method="POST" novalidate>
     <table>
         <tr>
+            <td style="vertical-align:top; border:2px solid black">
+                <table>
+                    <tr>
+               			<td colspan=2 class="detailheader">Issue</td>
+              		</tr>
+                    {% for field in detailform %}
+                    <tr>
+                        <td class="heading">{{field.label_tag}}</td>
+                        <td class="tablecont">{{ field }}</td>
+                    </tr>        
+                    {% endfor %}
+                </table>
+            </td>
             <td style="border:2px solid black">
                 <table>
+		          	<tr>
+               			<td colspan=2 class="detailheader">Bearbeitung</td>
+              		</tr>
                     {% for field in closeform %}
                     <tr>                        
                         <td class="heading">{{ field.label_tag}}</td>
@@ -26,20 +42,13 @@
                     {% endfor %}
                 </table>
             </td>
-            <td style="vertical-align:top; border:2px solid black">
-                <table>
-                    {% for field in detailform %}
-                    <tr>
-                        <td class="heading">{{field.label_tag}}</td>
-                        <td class="tablecont">{{ field }}</td>
-                    </tr>        
-                    {% endfor %}
-                </table>
-            </td>
         </tr>
         <tr>
         	<td colspan=2 style="vertical-align:top; border:2px solid black">
             	<table>
+            		<tr>
+               			<td colspan=2 class="detailheader">Maßnahmen</td>
+              		</tr>
             		<tr>
             			{% for header in headers %}
             			<td class="heading">{{header}}</td>

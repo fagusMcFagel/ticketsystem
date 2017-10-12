@@ -278,14 +278,14 @@ def show_ticket_detail(request, ticketid):
                     editform = EditableDataForm(initial=ticket_dict)
                 image = ticket_dict['image']
                 
-                #headers for the measures table
+                # build list of headers for compact display of measures linked to this ticket
                 headers = []
                 for key in CompactMeasureForm.FIELD_LABELS:
                     headers.append(CompactMeasureForm.FIELD_LABELS[key])
                 
-                #all measures linked to the currently displayed ticket
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
             
@@ -295,8 +295,7 @@ def show_ticket_detail(request, ticketid):
                         infomsg="Maßnahme hinzugefügt!"
                         
                 return render(request, 'ticket_detail.djhtml', 
-                              {
-                               'infomsg':infomsg,
+                              {'infomsg':infomsg,
                                'detailform':detailform,                                                                                        
                                'editform':editform,
                                'hasImage':image,   
@@ -363,26 +362,28 @@ def edit_ticket_detail(request, ticketid):
             if ticket_dict['status']=='closed':
                 return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']+'/'))
             
+            #build list of headers for compact display of measures linked to this ticket
+            headers = []
+            for key in CompactMeasureForm.FIELD_LABELS:
+                headers.append(CompactMeasureForm.FIELD_LABELS[key])
+            
             #GET request, display of input fields (with current data)
             if request.method=="GET":
                 
                 detailform = DetailForm(initial=ticket_dict)
-                
-                #headers for the measures table
-                headers = []
-                for key in CompactMeasureForm.FIELD_LABELS:
-                    headers.append(CompactMeasureForm.FIELD_LABELS[key])
-                
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
-                measures = []
-                for measure in ticket_measures:
-                    measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
                 editform = EditableDataForm(initial=ticket_dict)
                 if ticket_dict['image']==None:
                     hasImage = False
                 else:
                     hasImage = True
+                
+                # build list of compact forms displayed as rows for measures linked to this ticket
+                measures = []
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                for measure in ticket_measures:
+                    measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
+
                 return render(request, 'ticket_edit.djhtml',
                               {'detailform':detailform,
                                'editform':editform,
@@ -398,7 +399,9 @@ def edit_ticket_detail(request, ticketid):
                 #when editing is canceled (button "Übersicht" clicked) -> redirect
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/overview/")
-                
+                #when button "To Details" is clicked -> redirect
+                elif "back" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/")
                 #when button "New Measure..." was clicked -> redirect
                 elif "addmeasure" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticketid+"/add_measure/")
@@ -426,20 +429,14 @@ def edit_ticket_detail(request, ticketid):
                     editform = EditableDataForm(initial=ticket_dict)
                     image = ticket_dict['image']
                     
-                    headers = []
-                    for key in CompactMeasureForm.FIELD_LABELS:
-                        headers.append(CompactMeasureForm.FIELD_LABELS[key])
-                    
-                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    # build list of compact forms displayed as rows for measures linked to this ticket
                     measures = []
+                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
                     for measure in ticket_measures:
                         measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
-                    
-                    
                     return render(request, 'ticket_edit.djhtml',
-                                  {
-                                   'infomsg':infomsg,
+                                  {'infomsg':infomsg,
                                    'editform':editform, 
                                    'detailform':detailform, 
                                    'hasImage':image,
@@ -476,10 +473,12 @@ def edit_ticket_detail(request, ticketid):
                         infomsg='Fehlerhafte Eingabe(n)'
                 
                     image = ticket_dict['image']
-                    
-                    headers = []
-                    for key in CompactMeasureForm.FIELD_LABELS:
-                        headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                        
+                    # build list of compact forms displayed as rows for measures linked to this ticket
+                    measures = []
+                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    for measure in ticket_measures:
+                        measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
                     return render(request, 'ticket_edit.djhtml',
                                   {'infomsg':infomsg, 
@@ -580,13 +579,13 @@ def add_measure(request, ticketid):
 
 
 
-#view function for adding a measure to a given ticket
+#view function for editing specific data of an already existing measure
 '''
 #lets the user enter data for short and full description and the measures result
 #additionaly user has to choose the category of the solution (unsuccesful, partly, temporary, solution)
-#submit option for adding the measure-> validates the data and either
-#creates the measure in the database and returns to ticket details
-#or displays errors in the forms fields 
+#submit option for saving the changes, cancel option for returning to ticket details
+#either creates the measure in the database and returns to ticket details
+#or displays the measure and errors in the form's fields 
 #parameter: HttpRequest request, measureid (\d{1,4} -> 4 digits from urls.py)
 #URL:'tickets/measures/<measureid>'
 '''
@@ -605,7 +604,9 @@ def edit_measure(request, measureid):
             return render(request, "ticket_error.djhtml", {'errormsg':'Unknown error in views.edit_measure!'})
     #if correct measure was found
     else:
+        #get the ticket to which this measure belongs
         ticket = Ticket.objects.get(ticketid=measure.ticket.ticketid)
+        
         #build list of all groups the user is part of
         groups = []
         for group in request.user.groups.all():
@@ -616,6 +617,7 @@ def edit_measure(request, measureid):
             request.user.has_perm('tickets.change_solvingmeasures') and 
             ticket.responsible_person in [None, request.user]):
             
+            #display the measure in a MeasureForm with the according template
             if request.method=="GET":
                 measure_dict = model_to_dict(measure)
                 measure_dict['ticketid']=ticket.ticketid
@@ -623,45 +625,55 @@ def edit_measure(request, measureid):
                 measureform = MeasureForm(initial=measure_dict)
                 
                 return render(request, 'measure_edit.djhtml', {'measureform':measureform})
+            
+            #if the form was submitted via http-POST-Request
             elif request.method=="POST":
+                #if cancelled, redirect to ticket details, 
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticket.ticketid+"/")
+                #if confirmed, check the data for validity and save the changes or display the form with error messages for the input
                 elif "confirm" in request.POST:
                     
-                    #add ticketid here since only for displaying purpose in the form
+                    #add ticketid via a mutable copy of the post data (read only in form)
                     POST = request.POST.copy()
                     POST['ticketid']=measure.ticket.ticketid
                     measureform = MeasureForm(POST)
                     
+                    #check input validity
                     if measureform.is_valid():
+                        #get cleaned data and update changes to the corresponding fields
                         measureform_cd = measureform.cleaned_data
                         SolvingMeasures.objects.filter(measureid=str(measure.measureid)).update(shortdsc=measureform_cd['shortdsc'],
                                                                                                 dsc=measureform_cd['dsc'],
                                                                                                 result=measureform_cd['result'],
                                                                                                 isSolution=measureform_cd['isSolution'])
-                        #'refresh' measure object and init a new MeasureForm with the new data
+                        
+                        #'refresh' measure object, create a new MeasureForm with the new data
                         measure = SolvingMeasures.objects.get(measureid=str(measure.measureid))
                         measure_dict = model_to_dict(measure)
                         measure_dict['ticketid']= measure.ticket.ticketid
                         measureform = MeasureForm(initial=measure_dict)
                         
+                        #set infomsg to "saved changes!"
                         infomsg = "Änderungen gespeichert!"
                     else:
+                        #set infomsg to "faulty input!"
                         infomsg = "Fehlerhafte Eingaben!"
-                        
+                    
+                    #render and return the according template with measureform (with new data OR error messages for faulty input)
                     return render(request, 'measure_edit.djhtml', {'measureform':measureform, 'infomsg':infomsg})
             else:
                 return HttpResponseNotAllowed()
         #if user mustn't edit measures or another user is specified as responsible_person
         else:
-            #display error template with error description
+            #display error template with an error description
             if not request.user.has_perm('tickets.change_solvingmeasures'):
                 errormsg = 'Sie haben nicht die Berechtigung Maßnahmen zu bearbeiten!'
             elif ticket.responsible_person!=None and \
                 ticket.responsible_person!=request.user:
-                errormsg = 'Für dieses Ticket ist ein anderer Benutzer verantwortlich!'
+                errormsg = 'Für das Ticket ist ein anderer Benutzer verantwortlich!'
             else:
-                errormsg = 'Unbekannter Fehler bei Ticketbearbeitung (in tickets.views.edit_ticket_detail())'
+                errormsg = 'Unbekannter Fehler bei der Bearbeitung (in tickets.views.edit_measure())'
             return render(request, 'ticket_error.djhtml', {'errormsg': errormsg})    
                 
             
@@ -715,20 +727,21 @@ def close_ticket(request, ticketid):
             if ticket_dict['status']=='closed':
                 return HttpResponseRedirect('/tickets/'+str(ticket_dict['ticketid']+'/'))
             
+            # build list of headers for display of measures linked to this ticket
+            headers = []
+            for key in CompactMeasureForm.FIELD_LABELS:
+                headers.append(CompactMeasureForm.FIELD_LABELS[key])
+            
             #GET request display ticket_close template for user input
             if request.method=="GET":
-                    
                 #convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
                 ticket_dict['status']='Abgeschlossen'
                 
                 ticket_dict['sector']=ticket.sector
                 
-                headers = []
-                for key in CompactMeasureForm.FIELD_LABELS:
-                    headers.append(CompactMeasureForm.FIELD_LABELS[key])
-                
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
+                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                 
@@ -780,9 +793,11 @@ def close_ticket(request, ticketid):
                         detailform = DetailForm(initial=ticket_dict)
                         image = ticket_dict['image']
                         
-                        headers = []
-                        for key in CompactMeasureForm.FIELD_LABELS:
-                            headers.append(CompactMeasureForm.FIELD_LABELS[key])
+                        # build list of compact forms displayed as rows for measures linked to this ticket
+                        measures = []
+                        ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                        for measure in ticket_measures:
+                            measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                             
                         return render(request, 'ticket_close.djhtml',
                                       {'detailform':detailform,
@@ -952,7 +967,7 @@ def get_ticket_image(request, imgname):
 
 
 ########################################
-# OTHER VERSIONS OF BUILDING THE QUERY
+# OTHER VERSIONS OF BUILDING A QUERY FROM MULTIPLE CONDITIONS (I.E. IN search_ticket(request))
 # TODO: Remove comments in final version
             #Version with list of Q objects
 #             querylist=[]
