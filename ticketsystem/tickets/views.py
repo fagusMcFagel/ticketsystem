@@ -399,9 +399,11 @@ def edit_ticket_detail(request, ticketid):
                 #when editing is canceled (button "Übersicht" clicked) -> redirect
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/overview/")
+                
                 #when button "To Details" is clicked -> redirect
                 elif "back" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticketid+"/")
+                
                 #when button "New Measure..." was clicked -> redirect
                 elif "addmeasure" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticketid+"/add_measure/")
@@ -760,9 +762,15 @@ def close_ticket(request, ticketid):
                 #if button for overview is clicked -> redirect
                 if "cancel" in request.POST:
                     return HttpResponseRedirect("/tickets/overview/")
+                
                 #if button for editing is clicked -> redirect to editing form
                 elif "edit" in request.POST:
                     return HttpResponseRedirect("/tickets/"+ticketid+"/edit/")
+                
+                #when button "New Measure..." was clicked -> redirect
+                elif "addmeasure" in request.POST:
+                    return HttpResponseRedirect("/tickets/"+ticketid+"/add_measure/")
+                    
                 #if button for closing the ticket is clicked -> check input, update db
                 elif "close" in request.POST:
                     #init form object with POST data

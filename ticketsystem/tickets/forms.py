@@ -46,7 +46,7 @@ class ClosingDataForm(forms.Form):
     status = forms.ChoiceField(choices=[('closed','closed')],initial='closed', disabled=True, label="Status")
     comment = forms.CharField(widget=forms.Textarea, max_length=100, required=False, label="Kommentar")
     keywords = forms.CharField(widget=forms.Textarea,max_length=100, required=True, label="Keywords")
-    workinghours = forms.FloatField(required=True, label="Bearbeitungszeit (in Std)")
+    workinghours = forms.FloatField(required=True, label="Arbeitsstd.")
 
 #form for entering query data
 class SearchForm(forms.Form):
