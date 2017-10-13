@@ -39,7 +39,7 @@ class Ticket(models.Model):
     image = models.FileField(null=True, blank=True, upload_to='uploads/')
 
 #model for measures taken to solve the user's problem
-class SolvingMeasures(models.Model):
+class Measures(models.Model):
     SOLUTION_CHOICES = [('',''), ('unsuccesful', 'erfolglos'), ('temporary', 'temporär'), ('partly','teilweise'), ('solution', 'Lösung')]
     #primary key
     measureid = models.AutoField(primary_key=True, verbose_name="UID")

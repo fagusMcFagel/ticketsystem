@@ -1,5 +1,5 @@
 from django import forms
-from tickets.models import Ticket, SolvingMeasures
+from tickets.models import Ticket, Measures
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
@@ -68,7 +68,7 @@ class CompactMeasureForm(forms.Form):
     shortdsc = forms.CharField(max_length=100, label=FIELD_LABELS['shortdsc'], disabled=True)
     dsc = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FIELD_LABELS['dsc'], disabled=True)
     result = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FIELD_LABELS['result'], disabled=True)
-    isSolution = forms.ChoiceField(choices=SolvingMeasures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'], disabled=True)
+    isSolution = forms.ChoiceField(choices=Measures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'], disabled=True)
 
 #complete form for taken measures for the solution of the Ticket
 #complete form in a way, that all necessary fields are displayed at a normal size (not decreased)
@@ -80,4 +80,4 @@ class MeasureForm(forms.Form):
     shortdsc = forms.CharField(max_length=100, label=FIELD_LABELS['shortdsc'])
     dsc = forms.CharField(widget=forms.Textarea(), max_length=400, label=FIELD_LABELS['dsc'], required=False)
     result = forms.CharField(widget=forms.Textarea(), max_length=400, label=FIELD_LABELS['result'])
-    isSolution = forms.ChoiceField(choices=SolvingMeasures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'])
+    isSolution = forms.ChoiceField(choices=Measures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'])

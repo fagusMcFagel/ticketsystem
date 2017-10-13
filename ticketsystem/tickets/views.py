@@ -1,5 +1,5 @@
 from django.http import HttpResponse, HttpResponseRedirect
-from tickets.models import Ticket, SolvingMeasures
+from tickets.models import Ticket, Measures
 from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm,\
     ClosingDataForm, SearchForm, ClosedDataForm, CompactMeasureForm, MeasureForm
 from django.shortcuts import render
@@ -285,7 +285,7 @@ def show_ticket_detail(request, ticketid):
                 
                 # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                ticket_measures = Measures.objects.filter(ticket=ticket)
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
             
@@ -380,7 +380,7 @@ def edit_ticket_detail(request, ticketid):
                 
                 # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                ticket_measures = Measures.objects.filter(ticket=ticket)
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
 
@@ -433,7 +433,7 @@ def edit_ticket_detail(request, ticketid):
                     
                     # build list of compact forms displayed as rows for measures linked to this ticket
                     measures = []
-                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    ticket_measures = Measures.objects.filter(ticket=ticket)
                     for measure in ticket_measures:
                         measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
@@ -455,7 +455,7 @@ def edit_ticket_detail(request, ticketid):
                     ticket_dict['sector']=ticket.sector
                     detailform = DetailForm(initial=ticket_dict)
                     
-                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    ticket_measures = Measures.objects.filter(ticket=ticket)
                     measures = []
                     for measure in ticket_measures:
                         measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
@@ -478,7 +478,7 @@ def edit_ticket_detail(request, ticketid):
                         
                     # build list of compact forms displayed as rows for measures linked to this ticket
                     measures = []
-                    ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                    ticket_measures = Measures.objects.filter(ticket=ticket)
                     for measure in ticket_measures:
                         measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                     
@@ -556,7 +556,7 @@ def add_measure(request, ticketid):
                     
                     if measureform.is_valid():
                         measure_cd = measureform.cleaned_data
-                        SolvingMeasures.objects.create(ticket=ticket, creationdatetime=timezone.now(), shortdsc=measure_cd['shortdsc'], 
+                        Measures.objects.create(ticket=ticket, creationdatetime=timezone.now(), shortdsc=measure_cd['shortdsc'], 
                                                        dsc=measure_cd['dsc'], result=measure_cd['result'], isSolution=measure_cd['isSolution'])
                         
                         return HttpResponseRedirect('/tickets/'+str(ticket.ticketid)+'/?status=added')
@@ -595,12 +595,12 @@ def add_measure(request, ticketid):
 def edit_measure(request, measureid):
     #query for measure with given id
     try:
-        measure = SolvingMeasures.objects.get(measureid=str(measureid))
+        measure = Measures.objects.get(measureid=str(measureid))
     #catch possible exceptions
     except Exception as e:
-        if isinstance(e, SolvingMeasures.DoesNotExist):
+        if isinstance(e, Measures.DoesNotExist):
             return render(request, "ticket_error.djhtml", {'errormsg':'No measure found!'})
-        elif isinstance(e, SolvingMeasures.MultipleObjectsReturned):
+        elif isinstance(e, Measures.MultipleObjectsReturned):
             return render(request, "ticket_error.djhtml", {'errormsg':'Multiple measures found under unique ID!'})
         else:
             return render(request, "ticket_error.djhtml", {'errormsg':'Unknown error in views.edit_measure!'})
@@ -616,7 +616,7 @@ def edit_measure(request, measureid):
 
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if (ticket.sector in groups and
-            request.user.has_perm('tickets.change_solvingmeasures') and 
+            request.user.has_perm('tickets.change_measures') and 
             ticket.responsible_person in [None, request.user]):
             
             #display the measure in a MeasureForm with the according template
@@ -645,13 +645,13 @@ def edit_measure(request, measureid):
                     if measureform.is_valid():
                         #get cleaned data and update changes to the corresponding fields
                         measureform_cd = measureform.cleaned_data
-                        SolvingMeasures.objects.filter(measureid=str(measure.measureid)).update(shortdsc=measureform_cd['shortdsc'],
+                        Measures.objects.filter(measureid=str(measure.measureid)).update(shortdsc=measureform_cd['shortdsc'],
                                                                                                 dsc=measureform_cd['dsc'],
                                                                                                 result=measureform_cd['result'],
                                                                                                 isSolution=measureform_cd['isSolution'])
                         
                         #'refresh' measure object, create a new MeasureForm with the new data
-                        measure = SolvingMeasures.objects.get(measureid=str(measure.measureid))
+                        measure = Measures.objects.get(measureid=str(measure.measureid))
                         measure_dict = model_to_dict(measure)
                         measure_dict['ticketid']= measure.ticket.ticketid
                         measureform = MeasureForm(initial=measure_dict)
@@ -669,7 +669,7 @@ def edit_measure(request, measureid):
         #if user mustn't edit measures or another user is specified as responsible_person
         else:
             #display error template with an error description
-            if not request.user.has_perm('tickets.change_solvingmeasures'):
+            if not request.user.has_perm('tickets.change_measures'):
                 errormsg = 'Sie haben nicht die Berechtigung Maßnahmen zu bearbeiten!'
             elif ticket.responsible_person!=None and \
                 ticket.responsible_person!=request.user:
@@ -743,7 +743,7 @@ def close_ticket(request, ticketid):
                 
                 # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
-                ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                ticket_measures = Measures.objects.filter(ticket=ticket)
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                 
@@ -803,7 +803,7 @@ def close_ticket(request, ticketid):
                         
                         # build list of compact forms displayed as rows for measures linked to this ticket
                         measures = []
-                        ticket_measures = SolvingMeasures.objects.filter(ticket=ticket)
+                        ticket_measures = Measures.objects.filter(ticket=ticket)
                         for measure in ticket_measures:
                             measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
                             
