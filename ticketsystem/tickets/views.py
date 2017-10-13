@@ -94,7 +94,6 @@ def logout_user(request):
     
     return HttpResponseRedirect("/tickets/login/")
 
-
 #view function for creating a new ticket
 '''
 #lets the user choose sector and category
