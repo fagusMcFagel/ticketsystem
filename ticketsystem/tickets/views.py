@@ -623,9 +623,14 @@ def edit_measure(request, measureid):
 
         #if user has permissions to change tickets and no other user is responsible for the ticket
         if (ticket.sector in groups and
-            request.user.has_perm('tickets.change_measures') and 
             ticket.responsible_person in [None, request.user]):
             
+            #set fields as editable if user has the corresponding permissions
+            if request.user.has_perm('tickets.change_measures'):
+                editable=True
+            else:
+                editable=False
+                
             #display the measure in a MeasureForm with the according template
             if request.method=="GET":
                 measure_dict = model_to_dict(measure)
@@ -633,7 +638,7 @@ def edit_measure(request, measureid):
                 
                 measureform = MeasureForm(initial=measure_dict)
                 
-                return render(request, 'measure_edit.djhtml', {'measureform':measureform})
+                return render(request, 'measure_edit.djhtml', {'measureform':measureform, 'editable':editable})
             
             #if the form was submitted via http-POST-Request
             elif request.method=="POST":
@@ -670,7 +675,7 @@ def edit_measure(request, measureid):
                         infomsg = "Fehlerhafte Eingaben!"
                     
                     #render and return the according template with measureform (with new data OR error messages for faulty input)
-                    return render(request, 'measure_edit.djhtml', {'measureform':measureform, 'infomsg':infomsg})
+                    return render(request, 'measure_edit.djhtml', {'measureform':measureform, 'infomsg':infomsg, 'editable':editable})
             else:
                 return HttpResponseNotAllowed()
         #if user mustn't edit measures or another user is specified as responsible_person

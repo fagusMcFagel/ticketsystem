@@ -12,7 +12,7 @@
     		{% if field.label == "TicketID" %}
     		<td class="tablecont" disabled>{{field}}</td>
     		{% else %}
-    		<td class="tablecont">{{field}}</td>
+    		<td class="tablecont" {% if not editable %}disabled{% endif %}>{{field}}</td>
     		{% endif %}
     		{% if field.errors %}
     		{% for err in field.errors %}
