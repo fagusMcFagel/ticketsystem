@@ -1,78 +1,13 @@
-{% extends "base.djhtml" %}
+{% extends "ticket_base.djhtml" %}
 {% block title %}RG - Ticket schließen{% endblock %}
 
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
-{% block pagecontent %}
-    <form action="" method="POST" novalidate>
-    <table>
-        <tr>
-            <td style="vertical-align:top; border:2px solid black">
-                <table>
-                    <tr>
-               			<td colspan=2 class="detailheader">Issue</td>
-              		</tr>
-                    {% for field in detailform %}
-                    <tr>
-                        <td class="heading">{{field.label_tag}}</td>
-                        <td class="tablecont">{{ field }}</td>
-                    </tr>        
-                    {% endfor %}
-                </table>
-            </td>
-            <td style="border:2px solid black">
-                <table>
-		          	<tr>
-               			<td colspan=2 class="detailheader">Bearbeitung</td>
-              		</tr>
-                    {% for field in closeform %}
-                    <tr>                        
-                        <td class="heading">{{ field.label_tag}}</td>
-                        <td class="tablecont">{{ field }}</td>
-                    </tr>
-                    
-                    {% if field.errors %}
-                    {% for err in field.errors %}
-                    <tr>
-                        <td colspan=2 style="color:red; font-weight:bold;">{{ err }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% endif %}
-                    
-                    {% endfor %}
-                </table>
-            </td>
-        </tr>
-        <tr>
-        	<td colspan=2 style="vertical-align:top; border:2px solid black">
-            	<table>
-            		<tr>
-               			<td colspan=2 class="detailheader">Maßnahmen</td>
-              		</tr>
-            		<tr>
-            			{% for header in headers %}
-            			<td class="heading">{{header}}</td>
-            			{% endfor %}
-            		</tr>
-            		{% for measure in measures %}
-            		<tr>
-            			{% for field in measure %}
-            			{% if field.label == "UID" %}
-            			<td class="idlink"><a href="/tickets/measures/{{field.value}}/">{{ field.value }}</a></td>
-            			{% else %}
-	               		<td class="tablecont" disabled>{{field}}</td>
-	               		{% endif %}
-            			{% endfor %}
-	       			</tr>
-	           		{% endfor %}
-	           	</table>
-            </td>
-        </tr>
+{% block userbuttons %}
         <tr>
         	<td colspan=2>
         	    <table>
         			<tr>
-			            {% csrf_token %}
 			            <td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Übersicht"></td>
 			            <td class="buttoncell"><input class="btn" type="submit" name="edit" value="Bearbeiten"></td>
                         <td class="buttoncell"><input class="btn" type="submit" value="Neue Maßnahme..." name="addmeasure"</td>
@@ -81,6 +16,4 @@
 			    </table>
 			</td>
 		</tr>
-    </table>
-    </form>
 {% endblock %}

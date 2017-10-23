@@ -297,7 +297,9 @@ def show_ticket_detail(request, ticketid):
                               {'infomsg':infomsg,
                                'detailform':detailform,                                                                                        
                                'editform':editform,
-                               'hasImage':image,   
+                               'hasImage':image, 
+                               'editable':False,
+                               'is_Form':False,  
                                'headers':headers,
                                'measures':measures,    
                                'closed':closed
@@ -387,6 +389,8 @@ def edit_ticket_detail(request, ticketid):
                               {'detailform':detailform,
                                'editform':editform,
                                'hasImage':hasImage,
+                               'editable':True,
+                               'is_Form':True,
                                'headers':headers,
                                'measures':measures
                                })
@@ -441,6 +445,8 @@ def edit_ticket_detail(request, ticketid):
                                    'editform':editform, 
                                    'detailform':detailform, 
                                    'hasImage':image,
+                                   'editable':True,
+                                   'is_Form':True,
                                    'headers': headers,
                                    'measures': measures
                                    })
@@ -486,6 +492,8 @@ def edit_ticket_detail(request, ticketid):
                                    'detailform':detailform,
                                    'editform':editform,
                                    'hasImage':image,
+                                   'editable':True,
+                                   'is_Form':True,
                                    'headers':headers, 
                                    'measures':measures
                                    })
@@ -751,8 +759,10 @@ def close_ticket(request, ticketid):
                 image = ticket_dict['image']
                 return render(request, 'ticket_close.djhtml', 
                               {'detailform':detailform,
-                               'closeform':closeform,
+                               'editform':closeform,
                                'hasImage':image,
+                               'editable':True,
+                               'is_Form':True,
                                'headers':headers,
                                'measures': measures,
                               })
@@ -808,8 +818,10 @@ def close_ticket(request, ticketid):
                             
                         return render(request, 'ticket_close.djhtml',
                                       {'detailform':detailform,
-                                       'closeform':closeform,
+                                       'editform':closeform,
                                        'hasImage':image,
+                                       'editable':True,
+                                       'is_Form':True,
                                        'measures':measures,
                                        'headers':headers
                                        })
