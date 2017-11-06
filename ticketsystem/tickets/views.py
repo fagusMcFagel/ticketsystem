@@ -1,8 +1,9 @@
+#standard library
+from _functools import reduce
+import imghdr
+
+#Django
 from django.http import HttpResponse, HttpResponseRedirect
-from tickets.models import Ticket, Measures
-from tickets.forms import EnterTicketForm, LoginForm, DetailForm, EditableDataForm, \
-    ClosingDataForm, SearchForm, ClosedDataForm, CompactMeasureForm, MeasureForm
-from tickets.field_constants import FieldConstants
 from django.shortcuts import render
 from django.db.models import ForeignKey, Q
 from django.contrib.auth.decorators import login_required
@@ -10,12 +11,18 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
 from django.utils import timezone
-from _functools import reduce
 from django.core.mail import send_mail, get_connection
-from ticketsystem import settings
-import imghdr
 from django.http.response import HttpResponseNotAllowed
 
+#local Django
+from tickets.models import Ticket, Measures
+from tickets.forms import (
+    EnterTicketForm, LoginForm, DetailForm,
+    EditableDataForm,ClosingDataForm, SearchForm,
+    ClosedDataForm, CompactMeasureForm, MeasureForm
+    )
+from tickets.field_constants import FieldConstants
+from ticketsystem import settings
 # local constants
 LOGIN_URL = '/tickets/login/'
 STDRT_REDIRECT_URL = '/tickets/overview/'

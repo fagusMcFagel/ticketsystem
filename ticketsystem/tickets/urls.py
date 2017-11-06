@@ -1,5 +1,9 @@
-from django.conf.urls import url#, include
+# Django
+from django.conf.urls import url
+
+# local Django
 from . import views
+
 urlpatterns = [    
     url(r'^tickets/$', views.enter_ticket),
     url(r'^tickets/login/$', views.login_user, name='login_page'),

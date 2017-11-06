@@ -1,4 +1,7 @@
+#Django
 from django import forms
+
+# local Django
 from tickets.models import Ticket, Measures
 from tickets.field_constants import FieldConstants
 
@@ -67,7 +70,7 @@ class CompactMeasureForm(forms.Form):
     shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['shortdsc'], disabled=True)
     dsc = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['dsc'], disabled=True)
     result = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['result'], disabled=True)
-    isSolution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['isSolution'], disabled=True)
+    is_solution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['isSolution'], disabled=True)
 
 #complete form for taken measures for the solution of the Ticket
 #complete form in a way, that all necessary fields are displayed at a normal size (not decreased)
@@ -77,4 +80,4 @@ class MeasureForm(forms.Form):
     shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_MEASURE_FIELD_LABELS()['shortdsc'])
     dsc = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['dsc'], required=False)
     result = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['result'])
-    isSolution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_MEASURE_FIELD_LABELS()['isSolution'])
+    is_solution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_MEASURE_FIELD_LABELS()['isSolution'])

@@ -10,8 +10,14 @@ from django.core.files.base import File
 from django.utils import timezone
 
 class TicketTest(TestCase):
-    TEST_DICT = {'sector':Group.objects.get(name='Saperion'), 'category':'Problem', 'subject':'Test Ticket', 'description':'This ticket was created for testing'}
+    TEST_DICT = {
+        'sector':Group.objects.get(name='Saperion'), 
+        'category':'Problem', 
+        'subject':'Test Ticket', 
+        'description':'This ticket was created for testing'
+    }
     
+    #sets up test environment
     def setUp(self):
         #create group for "Saperion"
         testgroup = Group.objects.create(name='Saperion')
@@ -22,7 +28,13 @@ class TicketTest(TestCase):
         TicketTest.login(self) 
         #init dictionary with test values
         #create a new ticket via post to url /tickets/enter/
-        enter_Response = self.client.post("/tickets/enter/", {'sector':self.TEST_DICT['sector'], 'category':self.TEST_DICT['category'], 'subject':self.TEST_DICT['subject'], 'description':self.TEST_DICT['description']}, USERNAME = 'Mustermann')
+        enter_Response = self.client.post(
+                            "/tickets/enter/", 
+                            {'sector':self.TEST_DICT['sector'],
+                             'category':self.TEST_DICT['category'],
+                             'subject':self.TEST_DICT['subject'],
+                             'description':self.TEST_DICT['description']},
+                            USERNAME = 'Mustermann')
         
         tickets = Ticket.objects.all()
 
@@ -41,7 +53,7 @@ class TicketTest(TestCase):
         self.assertTrue(ticket_dict['category']==self.TEST_DICT['category'])
         self.assertTrue(ticket_dict['subject']==self.TEST_DICT['subject'])
         self.assertTrue(ticket_dict['description']==self.TEST_DICT['description'])
-    
+
     
     #test for ticket creation with File upload;
     def testEnterTicket_File(self):
@@ -52,7 +64,14 @@ class TicketTest(TestCase):
         start_count = Ticket.objects.all().count()
         with open(FILE_DIR+'/testTxt.txt', "rb") as errFO:
             self.assertFalse(errFO==None)
-            enter_Response = self.client.post("/tickets/enter/", {'sector':self.TEST_DICT['sector'], 'category':self.TEST_DICT['category'], 'subject':self.TEST_DICT['subject'], 'description':self.TEST_DICT['description'], 'image':errFO}, USERNAME = 'Mustermann')
+            enter_Response = self.client.post(
+                                "/tickets/enter/", 
+                                {'sector':self.TEST_DICT['sector'],
+                                 'category':self.TEST_DICT['category'],
+                                 'subject':self.TEST_DICT['subject'],
+                                 'description':self.TEST_DICT['description'],
+                                 'image':errFO},
+                                USERNAME = 'Mustermann')
 
         tickets = Ticket.objects.all()
         
@@ -64,7 +83,14 @@ class TicketTest(TestCase):
         start_count = Ticket.objects.all().count()
         with open(FILE_DIR+'/testBMP.bmp', "rb") as imgFO:
             self.assertFalse(imgFO==None)
-            enter_Response = self.client.post("/tickets/enter/", {'sector':self.TEST_DICT['sector'], 'category':self.TEST_DICT['category'], 'subject':self.TEST_DICT['subject'], 'description':self.TEST_DICT['description'], 'image':imgFO}, USERNAME = 'Mustermann')
+            enter_Response = self.client.post(
+                                "/tickets/enter/", 
+                                {'sector':self.TEST_DICT['sector'],
+                                 'category':self.TEST_DICT['category'],
+                                 'subject':self.TEST_DICT['subject'],
+                                 'description':self.TEST_DICT['description'],
+                                 'image':imgFO},
+                                USERNAME = 'Mustermann')
         
         tickets = Ticket.objects.all()
         self.assertTrue(tickets.count()==start_count+1)
@@ -91,17 +117,33 @@ class TicketTest(TestCase):
     #test for editing a ticket's data
     def testEditTicket(self):
         #init dictionary with ticket data keys/fields and values to set them to
-        REPLACE_DICT= {'status': 'open', 'comment':'Testing stuff', 'solution':'This is a test solution', 'keywords':''}
+        REPLACE_DICT= {
+            'status': 'open',
+            'comment':'Testing stuff',
+            'solution':'This is a test solution',
+            'keywords':''
+        }
         
         #init ticket data for test ticket and create test ticket in db
-        ticket_data = {'sector':Group.objects.get(name__contains='Saperion'), 'category': 'Problem', 'subject':'Editing Tickets', 'description':'Test for editing tickets'}
+        ticket_data = {
+            'sector':Group.objects.get(name__contains='Saperion'),
+            'category': 'Problem',
+            'subject':'Editing Tickets',
+            'description':'Test for editing tickets'
+        }
         now = timezone.now()
-        t = Ticket(sector=ticket_data['sector'], category=ticket_data['category'],
-                subject=ticket_data['subject'], description=ticket_data['description'],
-                creationdatetime = now, status='open',
+        t = Ticket(
+                sector=ticket_data['sector'],
+                category=ticket_data['category'],
+                subject=ticket_data['subject'],
+                description=ticket_data['description'],
+                creationdatetime = now,
+                status='open',
                 creator='ppssystem',
                 responsible_person=None,
-                comment='', solution='',keywords='',
+                comment='',
+                solution='',
+                keywords='',
                 image=''
             )
         t.save()
@@ -139,14 +181,25 @@ class TicketTest(TestCase):
     def testCloseTicket(self):
                 
         #init ticket data for test ticket and create test ticket in db
-        ticket_data = {'sector': Group.objects.get(name__contains='Saperion'), 'category': 'Problem', 'subject':'Closing Tickets', 'description':'Test for editing tickets'}
+        ticket_data = {
+            'sector': Group.objects.get(name__contains='Saperion'),
+            'category': 'Problem',
+            'subject':'Closing Tickets',
+            'description':'Test for editing tickets'
+        }
         now = timezone.now()
-        t = Ticket(sector=ticket_data['sector'], category=ticket_data['category'],
-                subject=ticket_data['subject'], description=ticket_data['description'],
-                creationdatetime = now, status='open',
+        t = Ticket(
+                sector=ticket_data['sector'],
+                category=ticket_data['category'],
+                subject=ticket_data['subject'],
+                description=ticket_data['description'],
+                creationdatetime = now,
+                status='open',
                 creator='ppssystem',
                 responsible_person=None,
-                comment='', solution='',keywords='', 
+                comment='',
+                solution='',
+                keywords='', 
                 image=''
             )
         t.save()
@@ -215,7 +268,12 @@ class TicketTest(TestCase):
         if User.objects.filter(username='ppssystem').count()==0:
             #create user for pps system
             testuser = User.objects.create_user('ppssystem', 'test@mail.de', 'preuuzalsor')
-            permissions = [Permission.objects.get(codename='add_ticket'), Permission.objects.get(codename='change_ticket'), Permission.objects.get(codename='delete_ticket')]
+            permissions = [
+                Permission.objects.get(codename='add_ticket'),
+                Permission.objects.get(codename='change_ticket'),
+                Permission.objects.get(codename='delete_ticket')
+            ]
+            
             testuser.user_permissions.add(permissions[0], permissions[1], permissions[2])
             testuser.save()
 

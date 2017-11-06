@@ -1,5 +1,8 @@
+#Django
 from django.db import models
 from django.contrib.auth.models import User, Group
+
+#local Django
 from tickets.field_constants import FieldConstants
 
 # model for tickets
@@ -44,5 +47,5 @@ class Measures(models.Model):
     shortdsc = models.CharField(max_length=100, verbose_name="Kurzbeschreibung")
     dsc = models.CharField(max_length=400, verbose_name="Beschreibung", null=True)
     result = models.CharField(max_length=400, verbose_name="Ergebnis")
-    isSolution = models.CharField(choices=SOLUTION_CHOICES, max_length=30, verbose_name="Ist Lösung")
+    is_solution = models.CharField(choices=SOLUTION_CHOICES, max_length=30, verbose_name="Ist Lösung")
     
