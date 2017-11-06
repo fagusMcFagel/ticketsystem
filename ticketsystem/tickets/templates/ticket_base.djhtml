@@ -15,8 +15,8 @@
                 	</tr>
                     {% for field in detailform %}
                     <tr>
-                        <td class="heading">{{field.label_tag}}</td>
-                        <td class="tablecont">{{field}}</td>
+                        <td class="heading">{{ field.label_tag }}</td>
+                        <td class="tablecont">{{ field }}</td>
                     </tr>        
                     {% endfor %}
                     
@@ -35,8 +35,8 @@
                 	</tr>
                     {% for field in editform %}
                     <tr>
-                        <td class="heading">{{field.label_tag}}</td>
-                        <td class="tablecont" {% if not editable %}disabled{% endif %}>{{field}}</td>
+                        <td class="heading">{{ field.label_tag }}</td>
+                        <td class="tablecont" {% if not editable %}disabled{% endif %}>{{ field }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -50,16 +50,16 @@
             		</tr>
             		<tr>
             			{% for header in headers %}
-            			<td class="heading">{{header}}</td>
+            			<td class="heading">{{ header }}</td>
             			{% endfor %}
             		</tr>
             		{% for measure in measures %}
             		<tr>
             			{% for field in measure %}
             			{% if field.label == "UID" %}
-            			<td class="idlink"><a href="/tickets/measures/{{field.value}}/">{{ field.value }}</a></td>
+            			<td class="idlink"><a href="/tickets/measures/{{ field.value }}/">{{ field.value }}</a></td>
             			{% else %}
-	               		<td class="tablecont" disabled>{{field}}</td>
+	               		<td class="tablecont" disabled>{{ field }}</td>
 	               		{% endif %}
             			{% endfor %}
 	       			</tr>

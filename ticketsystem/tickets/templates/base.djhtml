@@ -13,11 +13,10 @@
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/overview/">Übersicht</a></li>
             <li class="nvgtbtn"><a class="nvgtlink" href="/tickets/search/">Suche</a></li>
             {% block userlogin %}<li class="nvgtbtn"><a class="nvgtlink" href="/tickets/logout/">Logout</a></li>{% endblock %}
-            </li>
             <li class="infomsg">{% block infomsg %}{% endblock %}</li>
         </ul>
         {% load static %}
-        <img style="float:right;border-left:1px solid white;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img></li>
+        <img style="float:right;border-left:1px solid white;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img>
     </nav>
     <table cellspacing="0" cellpadding="0">
         <tr>

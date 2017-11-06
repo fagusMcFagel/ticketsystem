@@ -8,21 +8,21 @@
     <table>
     	{% for field in measureform %}
     	<tr>
-    		<td class="heading">{{field.label_tag}}</td>
+    		<td class="heading">{{ field.label_tag }}</td>
     		{% if field.label == "TicketID" %}
-    		<td class="tablecont" disabled>{{field}}</td>
+    		<td class="tablecont" disabled>{{ field }}</td>
     		{% else %}
-    		<td class="tablecont" {% if not editable %}disabled{% endif %}>{{field}}</td>
+    		<td class="tablecont" {% if not editable %}disabled{% endif %}>{{ field }}</td>
     		{% endif %}
     		{% if field.errors %}
     		{% for err in field.errors %}
-    		<td> {{err}}</td>
+    		<td> {{ err }}</td>
     		{% endfor %}
     		{% endif %}
     	</tr>
     	{% endfor %}
     	<tr>
-	    	{% csrf_token s%}
+	    	{% csrf_token %}
     		<td class="buttoncell"><input class="btn" type="submit" name="confirm" value="Speichern"></td>
     		<td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></td>
     	</tr>

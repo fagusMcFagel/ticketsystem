@@ -1,10 +1,11 @@
 from django import forms
 from tickets.models import Ticket, Measures
+from tickets.field_constants import FieldConstants
 
 #form for entering ticket data
 class EnterTicketForm(forms.Form):
-    sector = forms.ChoiceField(choices = Ticket.SECTOR_CHOICES, label="Bereich")
-    category = forms.ChoiceField(choices = Ticket.CATEGORY_CHOICES, label="Art")
+    sector = forms.ChoiceField(choices = FieldConstants.get_SECTOR_FIELD_CHOICES(), label="Bereich")
+    category = forms.ChoiceField(choices = FieldConstants.get_CATEGORY_FIELD_CHOICES(), label="Art")
     subject = forms.CharField(max_length=50, label="Betreff")
     description = forms.CharField(max_length=400,widget=forms.Textarea, label="Beschreibung")
     image = forms.FileField(required=False)
@@ -30,8 +31,8 @@ class DetailForm(forms.Form):
 
 #form for display of ticket data changeable by the ticket processors
 class EditableDataForm(forms.Form):
-    status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES, label="Status", required=False)
-    priority = forms.ChoiceField(choices = Ticket.PRIORITY_CHOICES, label="Priorität", required=False)
+    status = forms.ChoiceField(choices = FieldConstants.get_STATUS_FIELD_CHOICES(), label="Status", required=False)
+    priority = forms.ChoiceField(choices = FieldConstants.get_PRIORITY_FIELD_CHOICES(), label="Priorität", required=False)
     comment = forms.CharField(widget=forms.Textarea, max_length=100, label="Kommentar", required=False)
     keywords = forms.CharField(widget=forms.Textarea,max_length=100, label="Keywords", required=False)
 
@@ -50,9 +51,9 @@ class ClosingDataForm(forms.Form):
 
 #form for entering query data
 class SearchForm(forms.Form):
-    sector = forms.ChoiceField(choices = Ticket.SECTOR_CHOICES+[('','')], required=False, label="Bereich")
-    category = forms.ChoiceField(choices = Ticket.CATEGORY_CHOICES+[('','')], required=False, label="Art")
-    status = forms.ChoiceField(choices = Ticket.STATUS_CHOICES+[('','')], required=False, label="Status")
+    sector = forms.ChoiceField(choices = FieldConstants.get_SECTOR_FIELD_CHOICES()+[('','')], required=False, label="Bereich")
+    category = forms.ChoiceField(choices = FieldConstants.get_CATEGORY_FIELD_CHOICES()+[('','')], required=False, label="Art")
+    status = forms.ChoiceField(choices = FieldConstants.get_STATUS_FIELD_CHOICES()+[('','')], required=False, label="Status")
     subject = forms.CharField(max_length=40, required=False, label="Betreff")
     description = forms.CharField(max_length=40, required=False, label="Beschreibung")  
     comment = forms.CharField(max_length=40, required=False, label="Kommentar")
@@ -61,23 +62,19 @@ class SearchForm(forms.Form):
 #compact form for the taken measures for the solution of the Ticket
 #compact through decreasing textarea sizes for short preview of the texts (dsc, result)
 class CompactMeasureForm(forms.Form):
-    FIELD_LABELS = {'measureid':'UID', 'creationdatetime':'Zeitpunkt', 'shortdsc':'Kurzbeschreibung', 
-                    'dsc':'Beschreibung', 'result':'Ergebnis', 'isSolution':'ist Lösung'}
-    measureid = forms.IntegerField(label=FIELD_LABELS['measureid'], disabled=True)
-    creationdatetime = forms.DateTimeField(widget=forms.DateTimeInput, label=FIELD_LABELS['creationdatetime'], disabled=True)
-    shortdsc = forms.CharField(max_length=100, label=FIELD_LABELS['shortdsc'], disabled=True)
-    dsc = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FIELD_LABELS['dsc'], disabled=True)
-    result = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FIELD_LABELS['result'], disabled=True)
-    isSolution = forms.ChoiceField(choices=Measures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'], disabled=True)
+    measureid = forms.IntegerField(label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['measureid'], disabled=True)
+    creationdatetime = forms.DateTimeField(widget=forms.DateTimeInput, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['creationdatetime'], disabled=True)
+    shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['shortdsc'], disabled=True)
+    dsc = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['dsc'], disabled=True)
+    result = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['result'], disabled=True)
+    isSolution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['isSolution'], disabled=True)
 
 #complete form for taken measures for the solution of the Ticket
 #complete form in a way, that all necessary fields are displayed at a normal size (not decreased)
 #ticketid is a field used for display only, since the ticketid is taken from the ticket object in the view function
 class MeasureForm(forms.Form):
-    FIELD_LABELS = {'ticketid':'TicketID', 'shortdsc':'Kurzbeschreibung', 
-                    'dsc':'Beschreibung', 'result':'Ergebnis', 'isSolution':'ist Lösung'}
-    ticketid = forms.IntegerField(label=FIELD_LABELS['ticketid'], required=False)
-    shortdsc = forms.CharField(max_length=100, label=FIELD_LABELS['shortdsc'])
-    dsc = forms.CharField(widget=forms.Textarea(), max_length=400, label=FIELD_LABELS['dsc'], required=False)
-    result = forms.CharField(widget=forms.Textarea(), max_length=400, label=FIELD_LABELS['result'])
-    isSolution = forms.ChoiceField(choices=Measures.SOLUTION_CHOICES, label=FIELD_LABELS['isSolution'])
+    ticketid = forms.IntegerField(label=FieldConstants.get_MEASURE_FIELD_LABELS()['ticketid'], required=False)
+    shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_MEASURE_FIELD_LABELS()['shortdsc'])
+    dsc = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['dsc'], required=False)
+    result = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['result'])
+    isSolution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_MEASURE_FIELD_LABELS()['isSolution'])
