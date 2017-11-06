@@ -26,7 +26,6 @@ STDRT_REDIRECT_URL = '/tickets/overview/'
 #URL:'tickets/login'
 '''
 def login_user(request):
-    
     # renewal of session expiration
     # request.session.set_expiry(settings.COOKIE_EXP_AGE)
     
@@ -55,7 +54,7 @@ def login_user(request):
             if user is not None:
                 login(request, user)
                 
-                # if the login was redirected with parameter "next" (e.g. via @login_required decorator)
+                # if the login was redirected with parameter 'next' (e.g. via @login_required decorator)
                 if request.GET.get('next'):
                     return HttpResponseRedirect(request.GET.get('next'))
                 # default redirect to /tickets/overview/
@@ -65,8 +64,7 @@ def login_user(request):
             else:
                 error = True
                 form = LoginForm()
-
-    # if called normally
+    # if called normally (with GET-Request)
     else:
         # display currently logged in user, if existent
         if request.user.is_authenticated():
@@ -75,7 +73,6 @@ def login_user(request):
         form = LoginForm()
         
         infomsg = 'Login erforderlich!'
-
     
     return render(
         request, 'ticket_login.djhtml',
@@ -85,6 +82,7 @@ def login_user(request):
          'infomsg':infomsg}
     )
 
+
 # view function for logging a user out and redirecting to the login page
 '''
 #parameter: HttpRequest request
@@ -93,8 +91,9 @@ def login_user(request):
 def logout_user(request):
     if request.user.is_authenticated():
         logout(request)
-    
-    return HttpResponseRedirect("/tickets/login/")
+
+    return HttpResponseRedirect('/tickets/login/')
+
 
 # view function for creating a new ticket
 '''
@@ -105,14 +104,10 @@ def logout_user(request):
 '''
 @login_required(login_url=LOGIN_URL)
 def enter_ticket(request):
-    
-    # renewal of session expiration
-    # request.session.set_expiry(COOKIE_EXP_AGE)
-    
     # init infomsg as empty string
     infomsg = ''
     
-    if request.method == "POST":
+    if request.method == 'POST':
         # set form as EnterTicketForm-Object with the POST-data
         form = EnterTicketForm(request.POST, request.FILES)
 
@@ -134,7 +129,7 @@ def enter_ticket(request):
                 # if a file was uploaded but is not recognized as an image file
                 else:
                     # form: form to be displayed for ticket entering; infomsg: displayed infomsg
-                    infomsg = "Dateifehler"
+                    infomsg = 'Dateifehler'
                     fileErr = True
                     return render(
                         request, 'ticket_enter.djhtml',
@@ -164,6 +159,7 @@ def enter_ticket(request):
             # reset form and display thank-you-message
             infomsg = 'Ticket erfolgreich erstellt!'
             form = EnterTicketForm()    
+    #if requested with GET-Method
     else:   
         # initialize empty form
         form = EnterTicketForm()
@@ -176,7 +172,6 @@ def enter_ticket(request):
     )
 
 
-
 # view function for displaying a user's tickets
 '''
 #displays a list of open tickets for all groups/sectors the user's in on the left (NO responsible_person specified)
@@ -186,7 +181,6 @@ def enter_ticket(request):
 '''
 @login_required(login_url=LOGIN_URL)
 def show_ticket_list(request):
-    
     # renewal of session expiration
     # request.session.set_expiry(COOKIE_EXP_AGE)
     
@@ -201,20 +195,17 @@ def show_ticket_list(request):
     tickets_user = Ticket.objects.filter(query_user)
     
     # get column headings/names from Ticket model
-    labels_dict = FieldConstants.get_TICKET_FIELD_LABELSTICKET_LABELS()
+    labels_dict = FieldConstants.get_TICKET_FIELD_LABELS()
     
     # the groups the user is part of
     query_group = Q(status='open') & Q(responsible_person=None) & Q(sector__in=groups)
     tickets_group = Ticket.objects.filter(query_group)
     
-    
-    # initialize infomsg
+    # initialize infomsg and set it according to GET['status']
     infomsg = ''
-    
     if request.GET.get('status') :
         if request.GET['status'] == 'closed':
-            infomsg = "Ticket abgeschlossen!"
-    
+            infomsg = 'Ticket abgeschlossen!'
     
     # return the template with the fetched data on display
     return render(
@@ -226,7 +217,6 @@ def show_ticket_list(request):
     )
 
 
-
 # view function for viewing a ticket/'s data
 '''
 #submit options for: 
@@ -236,11 +226,10 @@ def show_ticket_list(request):
 '''
 @login_required(login_url=LOGIN_URL)
 def show_ticket_detail(request, ticketid):
-    
     # renewal of session expiration
     # request.session.set_expiry(COOKIE_EXP_AGE)
     
-    if request.method == "GET":
+    if request.method == 'GET':
         # query for ticket with given id
         try:
             ticket = Ticket.objects.get(ticketid=str(ticketid))
@@ -249,24 +238,23 @@ def show_ticket_detail(request, ticketid):
             if isinstance(e, Ticket.DoesNotExist):
                 return render(
                     request, 'ticket_error.djhtml',
-                    {'errormsg':"No Ticket found for this ID"}
+                    {'errormsg':'No Ticket found for this ID'}
                 )
             elif isinstance(e, Ticket.MultipleObjectsReturned):
                 return render(
                     request, 'ticket_error.djhtml',
-                    {'errormsg':"More than one ticket found for this ID"}
+                    {'errormsg':'More than one ticket found for this ID'}
                 )
             else:
                 return render(
                     request, 'ticket_error.djhtml',
-                    {'errormsg':"An unknown error occured"}
+                    {'errormsg':'An unknown error occured'}
                 )
         else:
             # convert ticket to dictionary with it's data
             ticket_dict = model_to_dict(ticket)
             # set sector to String represantation in ticket_dict
             ticket_dict['sector'] = ticket.sector
-            
             
             # build list of all groups the user is part of
             groups = []
@@ -302,10 +290,11 @@ def show_ticket_detail(request, ticketid):
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
             
+                #initialize infomsg and set it according to GET['status']
                 infomsg = ''
                 if request.GET.get('status') :
                     if request.GET['status'] == 'added':
-                        infomsg = "Maßnahme hinzugefügt!"
+                        infomsg = 'Maßnahme hinzugefügt!'
                         
                 return render(
                     request, 'ticket_detail.djhtml',
@@ -318,18 +307,17 @@ def show_ticket_detail(request, ticketid):
                      'headers':headers,
                      'measures':measures,
                      'closed':closed} 
-                )
-                
+                )  
             # if user doesn't have permission to view/change ticket data, display error page with according message
             else:
                 return render(
                     request, 'ticket_error.djhtml',
                     {'errormsg':'Sie haben keinen Zugriff auf das Ticket!'}
                 )
+    # deny any request method except GET
     else:
         # send response for 405: Method not allowed
         return HttpResponseNotAllowed()
-
 
 
 # view function for editing a ticket/'s data
@@ -343,7 +331,6 @@ def show_ticket_detail(request, ticketid):
 '''
 @login_required(login_url=LOGIN_URL)
 def edit_ticket_detail(request, ticketid):
-    
     # renewal of session expiration
     # request.session.set_expiry(COOKIE_EXP_AGE)
     
@@ -355,17 +342,17 @@ def edit_ticket_detail(request, ticketid):
         if isinstance(e, Ticket.DoesNotExist):
             return render(
                 request, 'ticket_error.djhtml',
-                {'errormsg':"No Ticket found for this ID"}
+                {'errormsg':'No Ticket found for this ID'}
             )
         elif isinstance(e, Ticket.MultipleObjectsReturned):
             return render(
                 request, 'ticket_error.djhtml',
-                {'errormsg':"More than one ticket found for this ID"}
+                {'errormsg':'More than one ticket found for this ID'}
             )
         else:
             return render(
                 request, 'ticket_error.djhtml',
-                {'errormsg':"An unknown error occured"}
+                {'errormsg':'An unknown error occured'}
             )
     else:
         # build list of all groups the user is part of
@@ -393,15 +380,11 @@ def edit_ticket_detail(request, ticketid):
                 headers.append(FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()[key])
             
             # GET request, display of input fields (with current data)
-            if request.method == "GET":
+            if request.method == 'GET':
                 
                 detailform = DetailForm(initial=ticket_dict)
                     
                 editform = EditableDataForm(initial=ticket_dict)
-                if ticket_dict['image'] == None:
-                    hasImage = False
-                else:
-                    hasImage = True
                 
                 # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
@@ -409,39 +392,40 @@ def edit_ticket_detail(request, ticketid):
                 for measure in ticket_measures:
                     measures.append(CompactMeasureForm(initial=model_to_dict(measure)))
 
+                image = ticket_dict['image']
+                
                 return render(
                     request, 'ticket_edit.djhtml',
                     {'detailform':detailform,
                      'editform':editform,
-                     'hasImage':hasImage,
+                     'hasImage':image,
                      'editable':True,
                      'is_Form':True,
                      'headers':headers,
                      'measures':measures}
                 )
-            
             # POST request, form was submitted, data will be validated and database updated (if input correct)
-            elif request.method == "POST":
+            elif request.method == 'POST':
                 infomsg = ''
 
-                # when editing is canceled (button "Übersicht" clicked) -> redirect
-                if "cancel" in request.POST:
-                    return HttpResponseRedirect("/tickets/overview/")
+                # when editing is canceled (button 'Übersicht' clicked) -> redirect
+                if 'cancel' in request.POST:
+                    return HttpResponseRedirect('/tickets/overview/')
                 
-                # when button "To Details" is clicked -> redirect
-                elif "back" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticketid + "/")
+                # when button 'To Details' is clicked -> redirect
+                elif 'back' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + ticketid + '/')
                 
-                # when button "New Measure..." was clicked -> redirect
-                elif "addmeasure" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticketid + "/add_measure/")
+                # when button 'New Measure...' was clicked -> redirect
+                elif 'addmeasure' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + ticketid + '/add_measure/')
                     
-                # redirect to closing for when button "Abschließen" is clicked
-                elif "close" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticketid + "/close/")
+                # redirect to closing for when button 'Abschließen' is clicked
+                elif 'close' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + ticketid + '/close/')
                 
                 # change responsible person to currently logged in user
-                elif "takeover" in request.POST:     
+                elif 'takeover' in request.POST:     
                     if ticket.responsible_person == None:
                         Ticket.objects.filter(ticketid=str(ticketid)).update(responsible_person=request.user)
                         infomsg = 'Ticket übernommen'
@@ -476,9 +460,8 @@ def edit_ticket_detail(request, ticketid):
                          'headers': headers,
                          'measures': measures}
                     )
-                
-                # check input data and update database when button "Speichern" is clicked
-                elif "confirm" in request.POST:
+                # check input data and update database when button 'Speichern'/'Save' is clicked
+                elif 'confirm' in request.POST:
 
                     # init form with POST data
                     editform = EditableDataForm(request.POST)
@@ -524,10 +507,10 @@ def edit_ticket_detail(request, ticketid):
                          'headers':headers,
                          'measures':measures}
                     )
-            
-                else:
-                    # send response for 405: Method not allowed
-                    return HttpResponseNotAllowed()
+            #deny any request method except GET and POST
+            else:
+            # send response for 405: Method not allowed
+                return HttpResponseNotAllowed()
         # if user mustn't edit tickets or another user is specified as responsible_person
         else:
             # display error template with error description
@@ -542,7 +525,6 @@ def edit_ticket_detail(request, ticketid):
                 request, 'ticket_error.djhtml',
                 {'errormsg': errormsg}
             )    
-
 
 
 # view function for adding a measure to a given ticket
@@ -564,17 +546,17 @@ def add_measure(request, ticketid):
     except Exception as e:
         if isinstance(e, Ticket.DoesNotExist):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'No measure found!'}
             )
         elif isinstance(e, Ticket.MultipleObjectsReturned):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Multiple measures found under unique ID!'}
             )
         else:
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Unknown error in views.add_measure'}
             )
     # if correct ticket was found
@@ -590,13 +572,13 @@ def add_measure(request, ticketid):
             ticket.responsible_person in [None, request.user]):
             
             # GET request display ticket_close template for user input
-            if request.method == "GET":
+            if request.method == 'GET':
                 return render(
                     request, 'measure_add.djhtml',
                     {'measureform': MeasureForm(initial={'ticketid':ticket.ticketid})}
                 )
-            elif request.method == "POST":
-                if "add" in request.POST:
+            elif request.method == 'POST':
+                if 'add' in request.POST:
                     # add ticketid through mutable copy of request.POST here since only for displaying purpose in the form
                     POST = request.POST.copy()
                     POST['ticketid'] = ticket.ticketid
@@ -618,9 +600,9 @@ def add_measure(request, ticketid):
                         return render(
                             request, 'measure_add.djhtml',
                             {'measureform': measureform,
-                             'infomsg':"Eingaben fehlerhaft"}
+                             'infomsg':'Eingaben fehlerhaft'}
                         )
-                elif "cancel" in request.POST:
+                elif 'cancel' in request.POST:
                      return HttpResponseRedirect('/tickets/' + str(ticket.ticketid) + '/')      
             else:
                 return HttpResponseNotAllowed()
@@ -638,7 +620,6 @@ def add_measure(request, ticketid):
                 request, 'ticket_error.djhtml',
                 {'errormsg': errormsg}
             )    
-
 
 
 # view function for editing specific data of an already existing measure
@@ -660,17 +641,17 @@ def edit_measure(request, measureid):
     except Exception as e:
         if isinstance(e, Measures.DoesNotExist):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'No measure found!'}
             )
         elif isinstance(e, Measures.MultipleObjectsReturned):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Multiple measures found under unique ID!'}
             )
         else:
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Unknown error in views.edit_measure!'}
             )
     # if correct measure was found
@@ -694,7 +675,7 @@ def edit_measure(request, measureid):
                 editable = False
                 
             # display the measure in a MeasureForm with the according template
-            if request.method == "GET":
+            if request.method == 'GET':
                 measure_dict = model_to_dict(measure)
                 measure_dict['ticketid'] = ticket.ticketid
                 
@@ -705,14 +686,13 @@ def edit_measure(request, measureid):
                     {'measureform':measureform,
                      'editable':editable}
                 )
-            
             # if the form was submitted via http-POST-Request
-            elif request.method == "POST":
+            elif request.method == 'POST':
                 # if cancelled, redirect to ticket details, 
-                if "cancel" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticket.ticketid + "/")
+                if 'cancel' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + str(ticket.ticketid) + '/')
                 # if confirmed, check the data for validity and save the changes or display the form with error messages for the input
-                elif "confirm" in request.POST:
+                elif 'confirm' in request.POST:
                     
                     # add ticketid via a mutable copy of the post data (read only in form)
                     POST = request.POST.copy()
@@ -736,11 +716,11 @@ def edit_measure(request, measureid):
                         measure_dict['ticketid'] = measure.ticket.ticketid
                         measureform = MeasureForm(initial=measure_dict)
                         
-                        # set infomsg to "saved changes!"
-                        infomsg = "Änderungen gespeichert!"
+                        # set infomsg to 'saved changes!'
+                        infomsg = 'Änderungen gespeichert!'
                     else:
-                        # set infomsg to "faulty input!"
-                        infomsg = "Fehlerhafte Eingaben!"
+                        # set infomsg to 'faulty input!'
+                        infomsg = 'Fehlerhafte Eingaben!'
                     
                     # render and return the according template with measureform (with new data OR error messages for faulty input)
                     return render(
@@ -749,6 +729,7 @@ def edit_measure(request, measureid):
                          'infomsg':infomsg,
                          'editable':editable}
                     )
+            #deny any request method except GET and POST
             else:
                 return HttpResponseNotAllowed()
         # if user mustn't edit measures or another user is specified as responsible_person
@@ -765,7 +746,6 @@ def edit_measure(request, measureid):
                 request, 'ticket_error.djhtml',
                 {'errormsg': errormsg}
             )    
-                
             
 
 # view function for closing a ticket
@@ -780,7 +760,6 @@ def edit_measure(request, measureid):
 '''
 @login_required(login_url=LOGIN_URL)
 def close_ticket(request, ticketid):
-    
     # renewal of session expiration
     # request.session.set_expiry(COOKIE_EXP_AGE)
     
@@ -791,17 +770,17 @@ def close_ticket(request, ticketid):
     except Exception as e:
         if isinstance(e, Ticket.DoesNotExist):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'No Ticket found!'}
             )
         elif isinstance(e, Ticket.MultipleObjectsReturned):
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Multiple tickets found for unique ID!'}
             )
         else:
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Unknown error in views.close_ticket!'}
             )
     # if correct ticket was found
@@ -832,7 +811,7 @@ def close_ticket(request, ticketid):
                 headers.append(FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()[key])
             
             # GET request display ticket_close template for user input
-            if request.method == "GET":
+            if request.method == 'GET':
                 # convert ticket to dictionary, for display set status to closed ('Abgeschlossen')
                 ticket_dict['status'] = 'Abgeschlossen'
                 
@@ -858,21 +837,21 @@ def close_ticket(request, ticketid):
                      'measures': measures}
                 )
             # POST request check form data for validity and update database if form is correct
-            elif request.method == "POST":
+            elif request.method == 'POST':
                 # if button for overview is clicked -> redirect
-                if "cancel" in request.POST:
-                    return HttpResponseRedirect("/tickets/overview/")
+                if 'cancel' in request.POST:
+                    return HttpResponseRedirect('/tickets/overview/')
                 
                 # if button for editing is clicked -> redirect to editing form
-                elif "edit" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticketid + "/edit/")
+                elif 'edit' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + ticketid + '/edit/')
                 
-                # when button "New Measure..." was clicked -> redirect
-                elif "addmeasure" in request.POST:
-                    return HttpResponseRedirect("/tickets/" + ticketid + "/add_measure/")
+                # when button 'New Measure...' was clicked -> redirect
+                elif 'addmeasure' in request.POST:
+                    return HttpResponseRedirect('/tickets/' + ticketid + '/add_measure/')
                     
                 # if button for closing the ticket is clicked -> check input, update db
-                elif "close" in request.POST:
+                elif 'close' in request.POST:
                     # init form object with POST data
                     closeform = ClosingDataForm(request.POST)
                     
@@ -884,7 +863,7 @@ def close_ticket(request, ticketid):
                             closingdatetime=timezone.now(),
                             workinghours=closeform.cleaned_data['workinghours'],
                             priority='low',
-                            status="closed",
+                            status='closed',
                             responsible_person=request.user
                         )
                         ticket = Ticket.objects.get(ticketid=str(ticketid))
@@ -894,8 +873,6 @@ def close_ticket(request, ticketid):
 
                         return HttpResponseRedirect('/tickets/overview/?status=closed')
                         
-
-                    
                     # if data is invalid, display the current template with an additional error messages
                     else:
                         ticket_dict = model_to_dict(ticket)
@@ -919,6 +896,7 @@ def close_ticket(request, ticketid):
                              'measures':measures,
                              'headers':headers}
                         )
+            # deny any request method except GET and POST
             else:
                 # send response for 405: Method not allowed
                 return HttpResponseNotAllowed()
@@ -938,7 +916,6 @@ def close_ticket(request, ticketid):
             )    
 
 
-
 '''
 # function which sends a mail to ticket_dict['creator']
 # informing the creator that the ticket with ID ticket_dict['ticketid'] has
@@ -946,17 +923,16 @@ def close_ticket(request, ticketid):
 # url: NONE (separated for convenience)
 '''
 def sendTicketCloseMail(ticket_dict):
-    subject = "Ihr Ticket #" + str(ticket_dict['ticketid']) + " wurde abgeschlossen"
+    subject = 'Ihr Ticket #' + str(ticket_dict['ticketid']) + ' wurde abgeschlossen'
     
-    message = "Das von Ihnen erstellte Ticket mit der ID " + str(ticket_dict['ticketid']) + \
-            " wurde vom Benutzer " + ticket_dict['responsible_person'] + " abgeschlossen!"
+    message =   'Das von Ihnen erstellte Ticket mit der ID ' + str(ticket_dict['ticketid']) + \
+                ' wurde vom Benutzer ' + ticket_dict['responsible_person'] + ' abgeschlossen!'
     
-    receiver = [ticket_dict['creator'] + "@rgoebel.de"]
+    receiver = [ticket_dict['creator'] + '@rgoebel.de']
     
     con = get_connection('django.core.mail.backends.console.EmailBackend')
     
-    send_mail(subject, message, "ticket@rgoebel.de", receiver, connection=con)
-
+    send_mail(subject, message, 'ticket@rgoebel.de', receiver, connection=con)
 
 
 # view function for ticket search
@@ -967,12 +943,11 @@ def sendTicketCloseMail(ticket_dict):
 #URL:'tickets/search'
 '''
 @login_required(login_url=LOGIN_URL)
-def search_tickets(request):
-   
+def search_tickets(request): 
     # renewal of session expiration
     # request.session.set_expiry(COOKIE_EXP_AGE)
     
-    if request.method == "GET":
+    if request.method == 'GET':
         # initialize searchform with GET data
         searchform = SearchForm(request.GET)
         
@@ -987,20 +962,22 @@ def search_tickets(request):
             for key in searchterms:
                 if searchterms[key] != '' and searchterms[key] is not None:
                     
-                    #####
+                    #########################
                     # TODO: full text will only work with MySQL (or postgreSQL);
                     # full text indices must be configured directly in db manager
-                    #####
+                    #########################
                     
                     # append '__search' -> full text search for these fields
                     if key == 'description' or key == 'comment':
-                        key = key + '__search'
-                    # append '__contains' -> in SQL "LIKE '%...%'" for non-choice-fields
+                        query_key = key + '__search'
+                    # append '__contains' -> in SQL 'LIKE '%...%'' for non-choice-fields
                     elif key != 'sector' and key != 'category' and key != 'status':
-                        key = key + '__contains'
-                    # else: key is unchanged -> in SQL "='...'"
+                        query_key = key + '__contains'
+                    # else: key is unchanged -> in SQL '='...''
+                    else:
+                        query_key=key
                     
-                    query_dict[key] = searchterms[key]
+                    query_dict[query_key] = searchterms[key]
             
             # build query from entered data via _functools.reduce and '&' as Q object
             # one liner form of version with one Q object
@@ -1018,8 +995,9 @@ def search_tickets(request):
                 ticket_dict['sector'] = ticket.sector.name
                 for key, value in ticket_dict.items():
                     if value is None:
-                        ticket_dict[key] = ""
+                        ticket_dict[key] = ''
                 
+                #check if an image for the ticket exists and display 'Ja/Nein' ('Yes/No') accordingly
                 if ticket_dict['image'] != '':
                     ticket_dict['image'] = 'Ja'
                 else:
@@ -1036,9 +1014,10 @@ def search_tickets(request):
             )
         else:
             return render(
-                request, "ticket_error.djhtml",
+                request, 'ticket_error.djhtml',
                 {'errormsg':'Searchform input invalid!'}
             )
+    # deny any request method except GET
     else:
         # send response for 405: Method not allowed
         return HttpResponseNotAllowed()
@@ -1085,9 +1064,9 @@ def show_ticket_image(request, ticketid):
 @login_required(login_url=LOGIN_URL)    
 def get_ticket_image(request, imgname):
     try:
-        img = open(settings.MEDIA_ROOT + "uploads/" + imgname, "rb+")
+        img = open(settings.MEDIA_ROOT + 'uploads/' + imgname, 'rb+')
         imgtype = imghdr.what(img)  
-        return HttpResponse(img.read(), content_type="image/" + imgtype)
+        return HttpResponse(img.read(), content_type='image/' + imgtype)
     except:
         errormsg = 'Fehler: Bild konnte nicht geöffnet werden'
         return render(
