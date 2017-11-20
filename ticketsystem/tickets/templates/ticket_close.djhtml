@@ -4,16 +4,10 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block userbuttons %}
-        <tr>
-        	<td colspan=2>
-        	    <table>
-        			<tr>
-			            <td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Übersicht"></td>
-			            <td class="buttoncell"><input class="btn" type="submit" name="edit" value="Bearbeiten"></td>
-                        <td class="buttoncell"><input class="btn" type="submit" value="Neue Maßnahme..." name="addmeasure"</td>
-			            <td class="buttoncell"><input class="btn" type="submit" name="close" value="Ticket schließen"></td>
-			        </tr>
-			    </table>
-			</td>
-		</tr>
+    <div style="float:left;">
+        <div class="buttoncell"><input class="btn" type="submit" name="cancel" value="Übersicht"></div>
+	    <div class="buttoncell"><input class="btn" type="submit" name="edit" value="Bearbeiten"></div>
+        <div class="buttoncell"><input class="btn" type="submit" value="Neue Maßnahme..." name="addmeasure"></div>
+	    <div class="buttoncell"><input class="btn" type="submit" name="close" value="Ticket schließen"><div>
+	</div>
 {% endblock %}

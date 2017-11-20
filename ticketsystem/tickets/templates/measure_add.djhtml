@@ -4,28 +4,31 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
+	<h1>Neue Maßnahme</h1>
 	<form action="" method="post" novalidate>
-    <table>
-    	{% for field in measureform %}
-    	<tr>
-    		<td class="heading">{{ field.label_tag }}</td>
-    		{% if field.label == "TicketID" %}
-    		<td class="tablecont" disabled>{{ field }}</td>
-    		{% else %}
-    		<td class="tablecont">{{ field }}</td>
-    		{% endif %}
-    		{% if field.errors %}
-    		{% for err in field.errors %}
-    		<td> {{ err }}</td>
-    		{% endfor %}
-    		{% endif %}
-    	</tr>
-    	{% endfor %}
-    	<tr>
-	    	{% csrf_token %}
-    		<td class="buttoncell"><input class="btn" type="submit" name="add" value="Hinzufügen"></td>
-    		<td class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></td>
-    	</tr>
-    </table>
+    <div>
+    	<ul class="formlist">
+    		{% for field in measureform %}
+    		<li class="fielditem">
+    			<div class="heading">{{ field.label_tag }}</div>
+    			{% if field.label == "TicketID" %}
+    			<div class="tablecont" disabled>{{ field }}</div>
+    			{% else %}
+    			<div class="tablecont">{{ field }}</div>
+    			{% endif %}
+    			{% if field.errors %}
+    			{% for err in field.errors %}
+    			<div> {{ err }}</div>
+    		    {% endfor %}
+    		    {% endif %}
+    	    </li>
+	    	{% endfor %}
+	    	<li>
+		    	{% csrf_token %}
+	    		<div class="buttoncell"><input class="btn" type="submit" name="add" value="Hinzufügen"></div>
+	    		<div class="buttoncell"><input class="btn" type="submit" name="cancel" value="Abbrechen"></div>
+	    	</li>
+    	</ul>
+    </div>
     </form>
 {% endblock %}

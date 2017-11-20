@@ -3,19 +3,22 @@
 
 {% block pagecontent %}
     <form action="" method="get" novalidate>
-    <table>
+    <div style="float:left; clear:right;">
+    	<ul class="formlist">
         {% for field in searchform %}
-        <tr>
-            <td class="heading">{{ field.label }}</td>
-            <td>{{ field }}</td>
-        </tr>
+        	<li>
+            	<div class="heading">{{ field.label }}</div>
+            	<div class="tablecont">{{ field }}</div>
+        	</li>
         {% endfor %}
-        <tr>
-            <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Suchen"></td>
-        </tr>
-    </table> 
+        <li>
+            <div class="buttoncell"><input class="btn" type="submit" value="Suchen"></div>
+        </li>
+    	</ul>
+    </div>
     </form>
     
+    <div style="float:left; margin-top:20px;">
     <table class="list" border="1" cellspacing="0" cellpadding="4px">
 	    <tr>
 	    {% for key, value in labels_dict.items %}
@@ -37,4 +40,5 @@
         </tr>
     	{% endfor %}
     </table>   
+    </div>
 {% endblock %}

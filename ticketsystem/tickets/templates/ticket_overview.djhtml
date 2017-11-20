@@ -4,68 +4,65 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
-    <table>
-        <tr>
-            <td class="tableheading">GRUPPENTICKETS</td>
-            <td width="30px"></td>
-            <td class="tableheading">ÜBERNOMMENE TICKETS</td>
-        </tr>
-        <tr>
-            <td class="overviewlist">
-                <table class="list" border="1" cellspacing="0" cellpadding="4px">
-                    <tr class="heading">
-                        <td>{{ labels_dict.ticketid }}</td>
-                        <td colspan=2>{{ labels_dict.creationdatetime }}</td>
-                        <td>{{ labels_dict.sector }}</td>
-                        <td>{{ labels_dict.category }}</td>
-                        <td>{{ labels_dict.subject }}</td>
-                    </tr>
-                    {% if tickets_group %}
-                    {% for ticket in tickets_group %}
-                    <tr id="{{ ticket.priority }}">
-                        <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
-                        <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
-                        <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
-                        <td>{{ ticket.sector }}</td>
-                        <td>{{ ticket.category }}</td>
-                        <td>{{ ticket.subject }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% else %}
-                    <tr>
-                        <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td width="30px"></td>
-            <td class="overviewlist">
-                <table class="list" border="1" cellspacing="0" cellpadding="4px">
-                    <tr class="heading">
-                        <td>{{ labels_dict.ticketid }}</td>
-                        <td colspan=2>{{ labels_dict.creationdatetime }}</td>
-                        <td>{{ labels_dict.sector }}</td>
-                        <td>{{ labels_dict.category }}</td>
-                        <td>{{ labels_dict.subject }}</td>
-                    </tr>
-                    {% if tickets_user %}
-                    {% for ticket in tickets_user %}
-                    <tr class="tablecont" id="{{ ticket.priority }}">
-                        <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
-                        <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
-                        <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
-                        <td>{{ ticket.sector }}</td>
-                        <td>{{ ticket.category }}</td>
-                        <td>{{ ticket.subject }}</td>
-                    </tr>
-                    {% endfor %}
-                    {% else %}
-                    <tr>
-                        <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-        </tr>
-    </table>
+    <div style="float:left; margin:20px;">
+        <table class="list" border="1" cellspacing="0" cellpadding="4px">
+            <tr>
+            	<td class="tableheading" colspan=6>GRUPPENTICKETS</td>
+            </tr>
+            <tr class="tableheading">
+                <td>{{ labels_dict.ticketid }}</td>
+                <td colspan=2>{{ labels_dict.creationdatetime }}</td>
+                <td>{{ labels_dict.sector }}</td>
+                <td>{{ labels_dict.category }}</td>
+                <td>{{ labels_dict.subject }}</td>
+            </tr>
+            {% if tickets_group %}
+            {% for ticket in tickets_group %}
+            <tr id="{{ ticket.priority }}">
+                <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
+                <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
+                <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
+                <td>{{ ticket.sector }}</td>
+                <td>{{ ticket.category }}</td>
+                <td>{{ ticket.subject }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+    
+    <div style="float:left; margin:20px;">
+        <table class="list" border="1" cellspacing="0" cellpadding="4px">
+            <tr>
+            	<td class="tableheading" colspan=6>ÜBERNOMMENE TICKETS</td>
+            </tr>
+            <tr class="tableheading">
+                <td>{{ labels_dict.ticketid }}</td>
+                <td colspan=2>{{ labels_dict.creationdatetime }}</td>
+                <td>{{ labels_dict.sector }}</td>
+                <td>{{ labels_dict.category }}</td>
+                <td>{{ labels_dict.subject }}</td>
+            </tr>
+            {% if tickets_user %}
+            {% for ticket in tickets_user %}
+            <tr class="tablecont" id="{{ ticket.priority }}">
+                <td><a class="idlink" href="{% url 'view_ticket' ticket.ticketid %}">{{ ticket.ticketid }}</a></td>
+                <td>{{ ticket.creationdatetime|date:"d.m.Y" }}</td>
+                <td>{{ ticket.creationdatetime|date:"H:i:s"}}</td>
+                <td>{{ ticket.sector }}</td>
+                <td>{{ ticket.category }}</td>
+                <td>{{ ticket.subject }}</td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td align="center" colspan=6>Keine übernommenen Tickets gefunden!</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
 {% endblock %}

@@ -2,74 +2,75 @@
 {% block title %}{% endblock %}
 
 {% block pagecontent %}
-	{% block ticketcontent%}
 	{% if is_Form %}
-		<form action="" method="POST" novalidate>
-	{% endif %} 
-	 <table>
-        <tr>
-            <td style="vertical-align:top; border:2px solid black">
-                <table>
-                	<tr>
-                		<td colspan=2 class="detailheader">Issue</td>
-                	</tr>
-                    {% for field in detailform %}
-                    <tr>
-                        <td class="heading">{{ field.label_tag }}</td>
-                        <td class="tablecont">{{ field }}</td>
-                    </tr>        
-                    {% endfor %}
-                    
-                    {% if hasImage %}
-                    <tr>
-                        <td class="heading">Screenshot</td>
-                        <td class="tablecont"><a href="image/">Screenshot</a></td>
-                    </tr>
-                    {% endif %}
-                </table>
-            </td>
-            <td style="border:2px solid black">
-                <table>
-                   	<tr>
-                		<td colspan=2 class="detailheader">Bearbeitung</td>
-                	</tr>
-                    {% for field in editform %}
-                    <tr>
-                        <td class="heading">{{ field.label_tag }}</td>
-                        <td class="tablecont" {% if not editable %}disabled{% endif %}>{{ field }}</td>
-                    </tr>
-                    {% endfor %}
-                </table>
-            </td>
-        </tr>
-        <tr>
-        	<td colspan=2 style="vertical-align:top; border:2px solid black">
-            	<table>
-            		<tr>
-            			<td colspan=2 class="detailheader">Maßnahmen</td>
-            		</tr>
-            		<tr>
-            			{% for header in headers %}
-            			<td class="heading">{{ header }}</td>
-            			{% endfor %}
-            		</tr>
-            		{% for measure in measures %}
-            		<tr>
-            			{% for field in measure %}
-            			{% if field.label == "UID" %}
-            			<td class="idlink"><a href="/tickets/measures/{{ field.value }}/">{{ field.value }}</a></td>
-            			{% else %}
-	               		<td class="tablecont" disabled>{{ field }}</td>
-	               		{% endif %}
-            			{% endfor %}
-	       			</tr>
+	<form action="" method="POST" novalidate>
+	{% endif %}
+	{% block ticketcontent%}
+    <div style="float: left; clear: right; height: 750px; width: 1300px; max-width:100%, max-height:100%; margin:0; padding:0;">
+	    <div style="float:left; margin: 20px; width:45%; height:70%;">
+	        <ul class="formlist">
+	            <li>
+	                <div class="detailheader">Issue</div>
+	            </li>
+	            {% for field in detailform %}
+	            <li class="fielditem">
+	                <div class="heading">{{ field.label_tag }}</div>
+	                <div class="tablecont">{{ field }}</div>
+	            </li>        
+	            {% endfor %}
+	                
+	            {% if hasImage %}
+	            <li class="fielditem">
+	                <div class="heading">Screenshot</div>
+	                <div class="tablecont"><a href="image/">Screenshot</a></div>
+	            </li>
+	            {% endif %}
+	        </ul>
+	    </div>
+	    
+	    <div style="float:left; clear:right; margin: 20px; width:45%; height:70%;">
+	        <ul class="formlist">
+	            <li>
+	                <div class="detailheader">Bearbeitung</div>
+	            </li>
+	            {% for field in editform %}
+	            <li class="fielditem">
+	                <div class="heading">{{ field.label_tag }}</div>
+	                <div class="tablecont" {% if not editable %}disabled{% endif %}>{{ field }}</div>
+	            </li>
+	            {% endfor %}
+	        </ul>
+	    </div>
+	    
+	    
+	    <div style="float: left; clear:right; margin:20px;">
+	        <table class="list" border="1" cellspacing="0" cellpadding="4px">
+	            <tr>
+	                <div class="detailheader">Maßnahmen</div>
+	            </tr>
+	            
+	            <tr>
+	        	    {% for header in headers %}
+	         	    <td class="tableheading">{{ header }}</td>
+	       			{% endfor %}
+	          	</tr>
+	          	
+	           	{% for measure in measures %}
+	           	<tr>
+	            	{% for field in measure %}
+	                {% if field.label == "UID" %}
+	            	<td class="idlink"><a href="/tickets/measures/{{ field.value }}/">{{ field.value }}</a></td>
+	           		{% else %}
+	               	<td disabled>{{ field }}</td>
+	               	{% endif %}
 	           		{% endfor %}
-	           	</table>
-            </td>
-        </tr>
-	{% endblock %}
-	{% if is_Form %}{% csrf_token %}{% endif %}
+	       		</tr>
+	           	{% endfor %}
+	        </table>
+	    </div>
+  	</div>
+    {% endblock %}
 	{% block userbuttons %}{% endblock %}
-	</table>
+	{% if is_Form %}{% csrf_token %}{% endif %}
 	{% if is_Form %}</form>{% endif %} 
 {% endblock %}

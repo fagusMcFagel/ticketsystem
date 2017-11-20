@@ -7,29 +7,32 @@
     <h1>Ticket erstellen</h1>
 
     <form action="" method="post" enctype="multipart/form-data" novalidate>
-        <table>
+        <div>
+            <ul class="formlist">
             {% for field in form %}
-            <tr>
-                <td class="heading">{{ field.label }}</td>
-                <td>{{ field }}</td>
-            </tr>
+            <li>
+                <div class="heading">{{ field.label }}</div>
+                <div class="tablecont">{{ field }}</div>
+            </li>
             {% if field.errors %}
             {% for err in field.errors %}
-            <tr>
-                <td colspan=2 style="color:red; font-weight:bold">{{ err }}</td>
-            </tr>
+            <li>
+                <div style="color:red; font-weight:bold">{{ err }}</div>
+            </li>
             {% endfor %}
             {% endif %}
             {% endfor %}
+            
 			{% if fileErr %}
-			<tr>
-				<td colspan=2 class="errormsg">Nur Bild-Dateien erlaubt!</td>
-			</tr>
+			<li>
+				<div class="errormsg">Nur Bild-Dateien erlaubt!</div>
+			</li>
 			{% endif %}
-            <tr>
+            <li>
                 {% csrf_token %}
-                <td colspan=2 class="buttoncell"><input class="btn" type="submit" value="Erstellen"></td>
-            </tr>
-        </table>
+                <div class="buttoncell"><input class="btn" type="submit" value="Erstellen"></div>
+            </li>
+            </ul>
+        </div>
     </form>
 {% endblock %}

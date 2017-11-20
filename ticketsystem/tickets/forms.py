@@ -65,19 +65,19 @@ class SearchForm(forms.Form):
 #compact form for the taken measures for the solution of the Ticket
 #compact through decreasing textarea sizes for short preview of the texts (dsc, result)
 class CompactMeasureForm(forms.Form):
-    measureid = forms.IntegerField(label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['measureid'], disabled=True)
-    creationdatetime = forms.DateTimeField(widget=forms.DateTimeInput, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['creationdatetime'], disabled=True)
-    shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['shortdsc'], disabled=True)
-    dsc = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['dsc'], disabled=True)
-    result = forms.CharField(widget=forms.Textarea(attrs={'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['result'], disabled=True)
-    is_solution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['isSolution'], disabled=True)
+    measureid = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'inputfield'}), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['measureid'], disabled=True)
+    creationdatetime = forms.DateTimeField(widget=forms.DateTimeInput(attrs={'class': 'inputfield'}), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['creationdatetime'], disabled=True)
+    shortdsc = forms.CharField(widget=forms.TextInput(attrs={'class': 'inputfield'}), max_length=100, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['shortdsc'], disabled=True)
+    dsc = forms.CharField(widget=forms.Textarea(attrs={'class': 'inputfield', 'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['dsc'], disabled=True)
+    result = forms.CharField(widget=forms.Textarea(attrs={'class': 'inputfield', 'rows': 1, 'cols': 30}), max_length=400, label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['result'], disabled=True)
+    is_solution = forms.ChoiceField(widget=forms.Select(attrs={'class': 'inputfield'}),choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()['isSolution'], disabled=True)
 
 #complete form for taken measures for the solution of the Ticket
 #complete form in a way, that all necessary fields are displayed at a normal size (not decreased)
 #ticketid is a field used for display only, since the ticketid is taken from the ticket object in the view function
 class MeasureForm(forms.Form):
-    ticketid = forms.IntegerField(label=FieldConstants.get_MEASURE_FIELD_LABELS()['ticketid'], required=False)
-    shortdsc = forms.CharField(max_length=100, label=FieldConstants.get_MEASURE_FIELD_LABELS()['shortdsc'])
-    dsc = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['dsc'], required=False)
-    result = forms.CharField(widget=forms.Textarea(), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['result'])
-    is_solution = forms.ChoiceField(choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_MEASURE_FIELD_LABELS()['isSolution'])
+    ticketid = forms.IntegerField(widget=forms.NumberInput(attrs={'class': 'inputfield'}), label=FieldConstants.get_MEASURE_FIELD_LABELS()['ticketid'], required=False)
+    shortdsc = forms.CharField(widget=forms.TextInput(attrs={'class': 'inputfield'}), max_length=100, label=FieldConstants.get_MEASURE_FIELD_LABELS()['shortdsc'])
+    dsc = forms.CharField(widget=forms.Textarea(attrs={'class': 'inputfield', 'rows':8}), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['dsc'], required=False)
+    result = forms.CharField(widget=forms.Textarea(attrs={'class': 'inputfield', 'rows':8}), max_length=400, label=FieldConstants.get_MEASURE_FIELD_LABELS()['result'])
+    is_solution = forms.ChoiceField(widget=forms.Select(attrs={'class': 'inputfield'}), choices=FieldConstants.get_SOLUTION_FIELD_CHOICES(), label=FieldConstants.get_MEASURE_FIELD_LABELS()['isSolution'])
