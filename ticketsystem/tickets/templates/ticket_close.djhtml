@@ -4,7 +4,7 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block userbuttons %}
-    <div style="float:left;">
+    <div>
         <div class="buttoncell"><input class="btn" type="submit" name="cancel" value="Übersicht"></div>
 	    <div class="buttoncell"><input class="btn" type="submit" name="edit" value="Bearbeiten"></div>
         <div class="buttoncell"><input class="btn" type="submit" value="Neue Maßnahme..." name="addmeasure"></div>

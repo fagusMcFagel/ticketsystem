@@ -4,7 +4,7 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block userbuttons %}
-    <div style="float:left;">
+    <div>
         <div class="buttoncell"><a href="{% url 'list_ticket' %}"><button class="btn" type="button">Übersicht</button></a></div>       
         <div class="buttoncell">{% if not closed %}<a href="{% url 'edit_ticket' detailform.ticketid.value %}"><button class="btn" type="button">Daten bearbeiten</button></a>{% endif %}</div>
         <div class="buttoncell">{% if not closed %}<a href="{% url 'add_measure' detailform.ticketid.value %}"><button class="btn" type="button">Neue Maßnahme...</button></a>{% endif %}</div>

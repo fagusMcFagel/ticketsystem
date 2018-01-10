@@ -4,7 +4,7 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
-    <div style="float:left; margin:20px;">
+    <div class="ticketlistcontainer">
         <table class="list" border="1" cellspacing="0" cellpadding="4px">
             <tr>
             	<td class="tableheading" colspan=6>GRUPPENTICKETS</td>
@@ -35,7 +35,7 @@
         </table>
     </div>
     
-    <div style="float:left; margin:20px;">
+    <div class="ticketlistcontainer">
         <table class="list" border="1" cellspacing="0" cellpadding="4px">
             <tr>
             	<td class="tableheading" colspan=6>ÜBERNOMMENE TICKETS</td>

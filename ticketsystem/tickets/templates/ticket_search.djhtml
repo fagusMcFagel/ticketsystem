@@ -3,7 +3,7 @@
 
 {% block pagecontent %}
     <form action="" method="get" novalidate>
-    <div style="float:left; clear:right;">
+    <div>
     	<ul class="formlist">
         {% for field in searchform %}
         	<li>
@@ -18,7 +18,7 @@
     </div>
     </form>
     
-    <div style="float:left; margin-top:20px;">
+    <div class="ticketlistcontainer">
     <table class="list" border="1" cellspacing="0" cellpadding="4px">
 	    <tr>
 	    {% for key, value in labels_dict.items %}

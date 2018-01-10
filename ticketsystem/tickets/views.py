@@ -5,9 +5,9 @@ import imghdr
 #Django
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from django.db.models import ForeignKey, Q
+from django.db.models import Q
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import Group
 from django.contrib.auth import authenticate, login, logout
 from django.forms.models import model_to_dict
 from django.utils import timezone
@@ -49,7 +49,7 @@ def login_user(request):
         if form.is_valid():
             
             # logout currently logged in user
-            if request.user.is_authenticated():
+            if request.user.is_authenticated:
                 logout(request)
                 
             # get user name and password from POST data and try to authenticate user
@@ -74,7 +74,7 @@ def login_user(request):
     # if called normally (with GET-Request)
     else:
         # display currently logged in user, if existent
-        if request.user.is_authenticated():
+        if request.user.is_authenticated:
             logged_in_user = request.user
         # set empty login form
         form = LoginForm()
@@ -96,7 +96,7 @@ def login_user(request):
 #URL:'tickets/logout'
 '''
 def logout_user(request):
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         logout(request)
 
     return HttpResponseRedirect('/tickets/login/')
@@ -202,7 +202,7 @@ def show_ticket_list(request):
     tickets_user = Ticket.objects.filter(query_user)
     
     # get column headings/names from Ticket model
-    labels_dict = FieldConstants.get_TICKET_FIELD_LABELS()
+    labels_dict = FieldConstants.TICKET_FIELD_LABELS
     
     # the groups the user is part of
     query_group = Q(status='open') & Q(responsible_person=None) & Q(sector__in=groups)
@@ -288,8 +288,8 @@ def show_ticket_detail(request, ticketid):
                 
                 # build list of headers for compact display of measures linked to this ticket
                 headers = []
-                for key in FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS():
-                    headers.append(FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()[key])
+                for key in FieldConstants.COMPACT_MEASURE_FIELD_LABELS:
+                    headers.append(FieldConstants.COMPACT_MEASURE_FIELD_LABELS[key])
                 
                 # build list of compact forms displayed as rows for measures linked to this ticket
                 measures = []
@@ -383,8 +383,8 @@ def edit_ticket_detail(request, ticketid):
             
             # build list of headers for compact display of measures linked to this ticket
             headers = []
-            for key in FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS():
-                headers.append(FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()[key])
+            for key in FieldConstants.COMPACT_MEASURE_FIELD_LABELS:
+                headers.append(FieldConstants.COMPACT_MEASURE_FIELD_LABELS[key])
             
             # GET request, display of input fields (with current data)
             if request.method == 'GET':
@@ -610,7 +610,7 @@ def add_measure(request, ticketid):
                              'infomsg':'Eingaben fehlerhaft'}
                         )
                 elif 'cancel' in request.POST:
-                     return HttpResponseRedirect('/tickets/' + str(ticket.ticketid) + '/')      
+                    return HttpResponseRedirect('/tickets/' + str(ticket.ticketid) + '/')      
             else:
                 return HttpResponseNotAllowed()
         # if user mustn't edit measures or another user is specified as responsible_person
@@ -793,7 +793,7 @@ def close_ticket(request, ticketid):
     # if correct ticket was found
     else:                
 
-         # build list of all groups the user is part of
+        # build list of all groups the user is part of
         groups = []
         for group in request.user.groups.all():
             groups.append(group)
@@ -814,8 +814,8 @@ def close_ticket(request, ticketid):
             
             # build list of headers for display of measures linked to this ticket
             headers = []
-            for key in FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS():
-                headers.append(FieldConstants.get_COMPACT_MEASURE_FIELD_LABELS()[key])
+            for key in FieldConstants.COMPACT_MEASURE_FIELD_LABELS:
+                headers.append(FieldConstants.COMPACT_MEASURE_FIELD_LABELS[key])
             
             # GET request display ticket_close template for user input
             if request.method == 'GET':
@@ -984,15 +984,20 @@ def search_tickets(request):
                     else:
                         query_key=key
                     
+                    #for the sector field get the corresponding group-id to the chosen group-name from Djangos Group DB
+                    if key=='sector':
+                        searchterms[key] = Group.objects.get(name=searchterms[key]).id
+                    
                     query_dict[query_key] = searchterms[key]
+                    
             
             # build query from entered data via _functools.reduce and '&' as Q object
             # one liner form of version with one Q object
             query = reduce(lambda q, key: q & Q(**{key: query_dict[key]}), query_dict, Q())             
             tickets = Ticket.objects.filter(query)
             
-            # init label_dict from FieldConstants.get_TICKET_FIELD_LABELS()
-            labels_dict = FieldConstants.get_TICKET_FIELD_LABELS()
+            # init label_dict from FieldConstants.TICKET_FIELD_LABELS
+            labels_dict = FieldConstants.TICKET_FIELD_LABELS
             
             # generate list from query results
             results = []

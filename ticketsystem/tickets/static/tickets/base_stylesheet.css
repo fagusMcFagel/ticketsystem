@@ -4,41 +4,53 @@ body {
     margin: 0;
 }
 
-.overviewlist {
-    vertical-align:top;
+div.content {
+	margin-top: 20px;
 }
-
-.errormsg {
-    color:red;
-    font-family: "Calibri";
-    font-size: 18pt;
-    font-weight:bold;
-}
-
-.btn {
-    color: white;
-    font-family: "Calibri";
-    font-size: 12pt;
-    font-weight: bold;
-    background-color: rgb(0,68,107);
-}
-
-.btn:hover {
-    background-color: rgb(70,140,180);
-}
-
-.buttoncell {
+	
+div.contentspacer {
 	float:left;
-    text-align: center;
-    padding-top: 15px;
-    width: 200px;
-    height: 20px;
+    background-color:rgb(0,68,107);
+    color: rgb(0,68,107);
+    width:15px;
+    height:100%;
+    padding: 0;
+    margin: 0;
 }
 
-.detailheader {
+div.contentelement {
+	width: 1200px;
+	padding-top: 30px;
+	margin-left: 20px;
+}
+
+div.detailframe {
+	float: left;
+	clear: right; 
+	max-width:100%; 
+	max-height:100%;
+}
+
+div.detailcontainer {
+	float:left;
+	clear: right;
+}
+
+div.detailheader {
     font-family: "Calibri";
-    font-size: 16pt;s
+    font-size: 20pt;
     font-weight: bold;
+}
+
+div.measurecontainer {
+	float: left;
+	clear: right;
+	margin: 5px 15px;
+}
+
+div.ticketlistcontainer {
+	float:left;
+	margin: 15px;
 }
 
 .formlist {
@@ -47,36 +59,8 @@ body {
     list-style-type:none;
 }
 
-.heading {
-	float:left;
-	width:200px;
-    font-size: 14pt;
-    padding:1pt 2pt;
-    margin:10px 5px 0px 0px;
-    font-weight: bold;
-    text-align: center;
-    background-color: rgba(70,140,180,0.7);
-}
-
-.tablecont {
-	padding:10px 0px 10px 0px;
-}
-
-.fielditem {
-	height:auto;
-	margin:5px 0px 5px 0px;
-}
-
-.inputfield {
-	font-family: "Calibri";
-    font-size: 11pt;
-}
-
-.tableheading {
-    font-size: 16pt;
-    font-weight: bold;
-    text-align: center;
-    background-color: rgba(70,140,180,0.5);
+.overviewlist {
+    vertical-align:top;
 }
 
 ul.nvgtbar {
@@ -114,23 +98,63 @@ li.infomsg {
     height: 50px;
 }
 
-.content {
-	top: 50px;
-}
-	
-
-div.contentspacer {
+.buttoncell {
 	float:left;
-    background-color:rgb(0,68,107);
-    color: rgb(0,68,107);
-    width:15px;
-    height:100%;
-    padding:0px;
-    margin:0px;
+    text-align: center;
+    padding-top: 15px;
+    width: 175px;
+    height: 20px;
 }
 
-div.contentelement {
-	padding: 30px 30px;
+.btn {
+    color: white;
+    font-family: "Calibri";
+    font-size: 12pt;
+    font-weight: bold;
+    background-color: rgb(0,68,107);
+}
+
+.btn:hover {
+    background-color: rgb(70,140,180);
+}
+
+.fielditem {
+	height:auto;
+	margin:5px 0px 5px 0px;
+}
+
+.inputfield {
+	font-family: "Calibri";
+    font-size: 11pt;
+}
+
+.tablecont {
+	padding:10px 0px 10px 0px;
+}
+
+.heading {
+	float:left;
+	width:200px;
+    font-size: 14pt;
+    padding:1pt 2pt;
+    margin:10px 5px 0px 0px;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(70,140,180,0.7);
+}
+
+.tableheading {
+    font-size: 16pt;
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(70,140,180,0.5);
+}
+
+.errormsg {
+    color:red;
+    font-family: "Calibri";
+    font-size: 18pt;
+    font-weight:bold;
 }
 
 a.nvgtlink {

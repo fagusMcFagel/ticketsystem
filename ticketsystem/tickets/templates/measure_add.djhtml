@@ -4,7 +4,7 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
-	<h1>Neue Maßnahme</h1>
+	<div class="detailheader">Neue Maßnahme</div>
 	<form action="" method="post" novalidate>
     <div>
     	<ul class="formlist">

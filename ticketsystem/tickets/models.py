@@ -7,15 +7,15 @@ from tickets.field_constants import FieldConstants
 
 # model for tickets
 class Ticket(models.Model):
-    CATEGORY_CHOICES = FieldConstants.get_CATEGORY_FIELD_CHOICES()
-    STATUS_CHOICES = FieldConstants.get_STATUS_FIELD_CHOICES()
-    PRIORITY_CHOICES = FieldConstants.get_PRIORITY_FIELD_CHOICES()
+    CATEGORY_CHOICES = FieldConstants.CATEGORY_FIELD_CHOICES
+    STATUS_CHOICES = FieldConstants.STATUS_FIELD_CHOICES
+    PRIORITY_CHOICES = FieldConstants.PRIORITY_FIELD_CHOICES
     
     # primary key
     ticketid = models.AutoField(primary_key=True, verbose_name="TicketID")
     
     # data input by user at ticket creation
-    sector = models.ForeignKey(Group, max_length=50, related_name="+")
+    sector = models.ForeignKey(Group, max_length=50, related_name="+", on_delete=models.CASCADE)
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=30, verbose_name="Art")
     subject = models.CharField(max_length=50, verbose_name="Betreff")
     description = models.CharField(max_length=400, verbose_name="Beschreibung")
@@ -25,7 +25,7 @@ class Ticket(models.Model):
     priority = models.CharField(choices=PRIORITY_CHOICES, max_length=20, verbose_name="Priorität")
     comment = models.CharField(max_length=100, verbose_name="Kommentar")
     keywords = models.CharField(max_length=100, verbose_name="Keywords") 
-    responsible_person = models.ForeignKey(User, max_length=50, related_name="+", null=True)   
+    responsible_person = models.ForeignKey(User, max_length=50, related_name="+", null=True, on_delete=models.CASCADE)   
     workinghours = models.FloatField(default=0.0, verbose_name="Bearbeitungszeit")
     
     # data which is filled at ticket creation/closing
@@ -38,11 +38,11 @@ class Ticket(models.Model):
 
 # model for measures taken to solve the user's problem
 class Measures(models.Model):
-    SOLUTION_CHOICES = FieldConstants.get_SOLUTION_FIELD_CHOICES()
+    SOLUTION_CHOICES = FieldConstants.SOLUTION_FIELD_CHOICES
     # primary key
     measureid = models.AutoField(primary_key=True, verbose_name="UID")
     
-    ticket = models.ForeignKey(Ticket, on_delete=models.CASCADE, related_name="Measures", null=True)
+    ticket = models.ForeignKey(Ticket, related_name="Measures", null=True, on_delete=models.CASCADE)
     creationdatetime = models.DateTimeField(verbose_name="Zeitpunkt")
     shortdsc = models.CharField(max_length=100, verbose_name="Kurzbeschreibung")
     dsc = models.CharField(max_length=400, verbose_name="Beschreibung", null=True)

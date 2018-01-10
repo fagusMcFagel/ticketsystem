@@ -6,8 +6,8 @@
 	<form action="" method="POST" novalidate>
 	{% endif %}
 	{% block ticketcontent%}
-    <div style="float: left; clear: right; height: 750px; width: 1300px; max-width:100%, max-height:100%; margin:0; padding:0;">
-	    <div style="float:left; margin: 20px; width:45%; height:70%;">
+    <div class="detailframe">
+	    <div class="detailcontainer">
 	        <ul class="formlist">
 	            <li>
 	                <div class="detailheader">Issue</div>
@@ -28,7 +28,7 @@
 	        </ul>
 	    </div>
 	    
-	    <div style="float:left; clear:right; margin: 20px; width:45%; height:70%;">
+	    <div class="detailcontainer">
 	        <ul class="formlist">
 	            <li>
 	                <div class="detailheader">Bearbeitung</div>
@@ -43,7 +43,7 @@
 	    </div>
 	    
 	    
-	    <div style="float: left; clear:right; margin:20px;">
+	    <div class="measurecontainer">
 	        <table class="list" border="1" cellspacing="0" cellpadding="4px">
 	            <tr>
 	                <div class="detailheader">Maßnahmen</div>

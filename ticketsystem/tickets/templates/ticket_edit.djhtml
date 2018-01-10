@@ -4,13 +4,13 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block userbuttons %}
-	<div style="float:left;clear:right;">
+	<div>
         <div class="buttoncell"><input class="btn" type="submit" value="Übersicht" name="cancel"></div> 
         <div class="buttoncell"><input class="btn" type="submit" value="Zu Details" name="back"></div>
         <div class="buttoncell"><input class="btn" type="submit" value="Neue Maßnahme..." name="addmeasure"></div>
         <div class="buttoncell"><input class="btn" type="submit" value="Abschließen" name="close"></div>  
     </div>
-    <div style="float:left;">
+    <div>
         <div class="buttoncell"><input class="btn" type="submit" value="Speichern" name="confirm"></div>
         <div class="buttoncell"><input class="btn" type="submit" value="Übernehmen" name="takeover"></div>
     </div>
