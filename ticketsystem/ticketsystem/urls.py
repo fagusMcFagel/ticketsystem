@@ -13,16 +13,34 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+
+### IMPORT THE APPLICABLE SETTINGS SET IN manage.py ###
+from manage import USED_SETTINGS
+
+import importlib
+used_settings = importlib.import_module(USED_SETTINGS)
+
+settings_media_url = used_settings.MEDIA_URL
+settings_media_root = used_settings.MEDIA_ROOT
+
+settings_static_url = used_settings.STATIC_URL
+settings_static_root = used_settings.STATIC_ROOT
+
+### REGULAR IMPORTS ###
 from django.conf.urls import url, include
 from django.contrib import admin
-from ticketsystem import settings, views
+from ticketsystem import views
 from django.conf.urls.static import static
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', views.redir_to_tickets),
     url(r'^', include('tickets.urls'))
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] 
 
-urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings_media_url, document_root=settings_media_root)
+
+urlpatterns += static(settings_static_url, document_root=settings_static_root)
+
+print(settings_static_url +"; "+settings_static_root)
+

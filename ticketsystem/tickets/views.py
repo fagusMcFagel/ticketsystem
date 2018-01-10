@@ -1,8 +1,16 @@
 #standard library
 from _functools import reduce
 import imghdr
+### IMPORT THE APPLICABLE SETTINGS SET IN manage.py ###
+from manage import USED_SETTINGS
 
-#Django
+import importlib
+used_settings = importlib.import_module(USED_SETTINGS)
+
+settings_media_root = used_settings.MEDIA_ROOT
+settings_media_url = used_settings.MEDIA_URL
+
+### REGULAR IMPORTS ###
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.db.models import Q
@@ -14,7 +22,6 @@ from django.utils import timezone
 from django.core.mail import send_mail, get_connection
 from django.http.response import HttpResponseNotAllowed
 
-#local Django
 from tickets.models import Ticket, Measures
 from tickets.forms import (
     EnterTicketForm, LoginForm, DetailForm,
@@ -22,7 +29,7 @@ from tickets.forms import (
     ClosedDataForm, CompactMeasureForm, MeasureForm
     )
 from tickets.field_constants import FieldConstants
-from ticketsystem import settings
+
 # local constants
 LOGIN_URL = '/tickets/login/'
 STDRT_REDIRECT_URL = '/tickets/overview/'
@@ -154,7 +161,7 @@ def enter_ticket(request):
                 subject=cd['subject'], description=cd['description'],
                 creationdatetime=now, status='open',
                 # TODO:get username from form/request-data?
-                creator=request.META['USERNAME'],
+                creator=request.user.username,
                 responsible_person=None,
                 comment='', keywords='',
                 image=img
@@ -270,7 +277,7 @@ def show_ticket_detail(request, ticketid):
             
             # if user is ticket creator or has permissions to change tickets 
             if (ticket.sector in groups and 
-                (request.META['USERNAME'] == ticket_dict['creator'] 
+                (request.user.username == ticket_dict['creator'] 
                 or request.user.has_perm('tickets.change_ticket'))
                 ):
                 # store if the ticket is already closed
@@ -1076,7 +1083,7 @@ def show_ticket_image(request, ticketid):
 @login_required(login_url=LOGIN_URL)    
 def get_ticket_image(request, imgname):
     try:
-        img = open(settings.MEDIA_ROOT + 'uploads/' + imgname, 'rb+')
+        img = open(settings_media_root + 'uploads/' + imgname, 'rb+')
         imgtype = imghdr.what(img)  
         return HttpResponse(img.read(), content_type='image/' + imgtype)
     except:

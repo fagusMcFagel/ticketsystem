@@ -1,189 +1,199 @@
 body {
-    font-family: "Calibri";
-    font-size: 16pt;
-    margin: 0;
+    font-family:"Calibri";
+    font-size:16pt;
+    margin:0;
 }
 
-div.content {
-	margin-top: 20px;
+.content {
+	padding-top:40px;
 }
 	
-div.contentspacer {
+.contentspacer {
 	float:left;
     background-color:rgb(0,68,107);
-    color: rgb(0,68,107);
+    color:rgb(0,68,107);
     width:15px;
     height:100%;
-    padding: 0;
-    margin: 0;
+    padding:0;
+    margin:0;
 }
 
-div.contentelement {
-	width: 1200px;
-	padding-top: 30px;
-	margin-left: 20px;
+.contentelement {
+	width:1200px;
+	padding-top:30px;
+	margin-left:20px;
 }
 
-div.detailframe {
-	float: left;
-	clear: right; 
+.detailframe {
+	float:left;
+	clear:right; 
 	max-width:100%; 
 	max-height:100%;
 }
 
-div.detailcontainer {
+.detailcontainer {
 	float:left;
-	clear: right;
+	clear:right;
 }
 
-div.detailheader {
-    font-family: "Calibri";
-    font-size: 20pt;
-    font-weight: bold;
+.pageheader {
+	font-family:"Calibri";
+    font-size:20pt;
+    font-weight:bold;
+    margin-left:15px;
+    margin-top:10px;
 }
 
-div.measurecontainer {
-	float: left;
-	clear: right;
-	margin: 5px 15px;
+.detailheader {
+    font-family:"Calibri";
+    font-size:20pt;
+    font-weight:bold;
+    margin-top:10px;
 }
 
-div.ticketlistcontainer {
+.measurecontainer {
 	float:left;
-	margin: 15px;
+	clear:right;
+	margin:5px 15px;
+}
+
+.ticketlistcontainer {
+	float:left;
+	margin:15px;
 }
 
 .formlist {
-    padding:10px;
-    margin:5px;
     list-style-type:none;
+    margin-left:15px;
+    padding:0;
 }
 
 .overviewlist {
     vertical-align:top;
 }
 
-ul.nvgtbar {
-    position: fixed;
+.nvgtbar {
+    position:fixed;
     top:0;
     width:100%;
     list-style-type:none;
     margin:0;
     padding:0;
     overflow:hidden;
-    height: 40px;
-    font-family: "Calibri";
-    background-color: rgb(0,68,107);
-    font-size: 20px;
-    font-weight: bold;
+    height:40px;
+    font-family:"Calibri";
+    background-color:rgb(0,68,107);
+    font-size:20px;
+    font-weight:bold;
 }
 
-li.nvgtbtn {
-    float: left;
-    background-color: rgb(0,68,107);
-    border-right: 1px solid #ffffff;
-    border-left: 0px;
-    height: 50px;
+.nvgtbtn {
+    float:left;
+    background-color:rgb(0,68,107);
+    border-right:1px solid #ffffff;
+    border-left:0;
+    height:50px;
 }
 
-li.infomsg {
+.infomsg {
     float:left;
     margin-left:10px;
-    color: hsl(45, 80%, 60%);
-    padding: 8px;
-    background-color: rgb(0,68,107);
-    border-right: 0px;
-    border-left: 0px;
-    font-weight: 800;
-    height: 50px;
+    color:rgb(255,153,51);
+    color:hsl(45, 80%, 60%);
+    padding:8px;
+    background-color:rgb(0,68,107);
+    border-right:0;
+    border-left:0;
+    font-weight:800;
+    height:50px;
 }
 
 .buttoncell {
 	float:left;
-    text-align: center;
-    padding-top: 15px;
-    width: 175px;
-    height: 20px;
+    text-align:center;
+    padding-top:15px;
+    width:175px;
+    height:20px;
 }
 
 .btn {
-    color: white;
-    font-family: "Calibri";
-    font-size: 12pt;
-    font-weight: bold;
-    background-color: rgb(0,68,107);
+    color:white;
+    font-family:"Calibri";
+    font-size:12pt;
+    font-weight:bold;
+    background-color:rgb(0,68,107);
 }
 
 .btn:hover {
-    background-color: rgb(70,140,180);
+    background-color:rgb(70,140,180);
 }
 
 .fielditem {
 	height:auto;
-	margin:5px 0px 5px 0px;
+	margin:5px 0 5px 0;
 }
 
 .inputfield {
-	font-family: "Calibri";
-    font-size: 11pt;
-}
-
-.tablecont {
-	padding:10px 0px 10px 0px;
+	font-family:"Calibri";
+    font-size:11pt;
 }
 
 .heading {
 	float:left;
 	width:200px;
-    font-size: 14pt;
-    padding:1pt 2pt;
-    margin:10px 5px 0px 0px;
-    font-weight: bold;
-    text-align: center;
-    background-color: rgba(70,140,180,0.7);
+    font-weight:bold;
+    margin-right:5px;
+    text-align:center;
+    background-color:rgb(70,140,180);
+    background-color:rgba(70,140,180,0.7);
+}
+
+.tablecont {
+	margin:15px 0;
 }
 
 .tableheading {
-    font-size: 16pt;
-    font-weight: bold;
-    text-align: center;
-    background-color: rgba(70,140,180,0.5);
+    font-size:16pt;
+    font-weight:bold;
+    text-align:center;
+    background-color:rgb(70,140,180);
+    background-color:rgba(70,140,180,0.5);
 }
 
 .errormsg {
     color:red;
-    font-family: "Calibri";
-    font-size: 18pt;
+    font-family:"Calibri";
+    font-size:18pt;
     font-weight:bold;
 }
 
-a.nvgtlink {
-    margin: 0;
-    padding: 8px;
-    text-align: center;
-    display: block;
-    color: white;
+.nvgtlink {
+    margin:0;
+    padding:8px;
+    text-align:center;
+    display:block;
+    color:white;
     text-decoration:none;
 }
 
 .idlink {
-    padding: 0px 20px;
+    padding:0 20px;
     font-size:16pt;
-    color: blue;
+    color:blue;
     text-decoration:none;
-    text-weight:bold;
+    font-weight:bold;
 }
 
-img.rglogo {
-    position: fixed;
+.rglogo {
+    position:fixed;
     top:0;
     right:0;
     margin:0;
     padding:0;
-    height: 120px;
-    background-color: rgb(0,68,107);
-    display: block;
-    float: right;
+    height:120px;
+    background-color:rgb(0,68,107);
+    display:block;
+    float:right;
 }
 
 li a:hover {
@@ -191,13 +201,16 @@ li a:hover {
 }
 
 #low{
-	background-color: rgba(200,255,26, 0.5);
+	background-color:rgb(200,255,26);
+	background-color:rgba(200,255,26,0.5);
 }
 
 #moderate{
-	background-color: rgba(255,160,26, 0.5);
+	background-color:rgb(255,160,26);
+	background-color:rgba(255,160,26,0.5);
 }
 
 #high{
-	background-color: rgba(255,80,26, 0.5);
+	background-color:rgb(255,80,26);
+	background-color:rgba(255,80,26,0.5);
 }

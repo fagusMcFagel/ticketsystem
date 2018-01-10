@@ -2,8 +2,10 @@
 import os
 import sys
 
+USED_SETTINGS = "ticketsystem.settings_dev"
 if __name__ == "__main__":
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ticketsystem.settings")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ticketsystem.settings_dev")
+    os.environ["DJANGO_SETTINGS_MODULE"]=USED_SETTINGS
     try:
         from django.core.management import execute_from_command_line
     except ImportError:

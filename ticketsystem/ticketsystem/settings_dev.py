@@ -28,12 +28,12 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 #PATH FOR PROJECT AND SITE (equal atm)
-PROJECT_ROOT = os.path.join(os.path.dirname(__file__), '..')
+PROJECT_ROOT = BASE_DIR
 SITE_ROOT = PROJECT_ROOT
 
 #DIRECTORY AND URL FOR MEDIA (FileField in Models)
-MEDIA_ROOT = os.path.join(SITE_ROOT, '/Users/Forner/git/ticketsystem/ticketsystem/tempfiles/')
-MEDIA_URL = '/'
+MEDIA_ROOT = os.path.join(SITE_ROOT, 'C:/Users/Forner/git/ticketsystem/ticketsystem/tempfiles/')
+MEDIA_URL = '/media/'
 
 #LOGOUT USER ON BROWSER CLOSE
 #SESSION_EXPIRE_AT_BROWSER_CLOSE = True
@@ -130,5 +130,5 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.11/howto/static-files/
-
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'C:/Users/forner/git/ticketsystem_20_Nov_17/static/')

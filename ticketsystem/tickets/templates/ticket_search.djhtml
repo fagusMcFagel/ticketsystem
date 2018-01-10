@@ -4,6 +4,7 @@
 {% block pagecontent %}
     <form action="" method="get" novalidate>
     <div>
+  		<div class="pageheader">Ticketsuche</div>
     	<ul class="formlist">
         {% for field in searchform %}
         	<li>

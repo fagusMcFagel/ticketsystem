@@ -15,7 +15,6 @@
             {% block userlogin %}<li class="nvgtbtn"><a class="nvgtlink" href="/tickets/logout/">Logout</a></li>{% endblock %}
             <li class="infomsg">{% block infomsg %}{% endblock %}</li>
         </ul>
-        {% load static %}
         <img style="float:right;border-left:1px solid white;" src={% static 'tickets/rg logo.jpg' %} alt="RGLOGO" class="rglogo"></img>
     </nav>
     <div class="content">

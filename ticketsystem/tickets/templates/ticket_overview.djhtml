@@ -4,6 +4,8 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
+	<div class="pageheader">Übersicht offener Tickets</div>
+    
     <div class="ticketlistcontainer">
         <table class="list" border="1" cellspacing="0" cellpadding="4px">
             <tr>

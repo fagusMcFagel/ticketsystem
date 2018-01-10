@@ -4,10 +4,10 @@
 {% block infomsg %}{{ infomsg }}{% endblock %}
 
 {% block pagecontent %}
-    <div class="detailheader">Ticket erstellen</div>
-
     <form action="" method="post" enctype="multipart/form-data" novalidate>
-        <div>
+    	<div>
+       		<div class="pageheader">Ticket erstellen</div>
+       		
             <ul class="formlist">
             {% for field in form %}
             <li>
